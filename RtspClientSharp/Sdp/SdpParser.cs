@@ -6,6 +6,7 @@ using System.Linq;
 using Logger;
 using RtspClientSharp.Codecs;
 using RtspClientSharp.Codecs.Audio;
+using RtspClientSharp.Codecs.Data;
 using RtspClientSharp.Codecs.Video;
 using RtspClientSharp.RawFrames.Video;
 using RtspClientSharp.Utils;
@@ -471,6 +472,11 @@ namespace RtspClientSharp.Sdp
                     g726CodecInfo.Channels = channels;
 
                 return g726CodecInfo;
+            }
+
+            if (codecName.Contains("VND.ONVIF.METADATA"))
+            {
+                return new OnvifMetadataCodecInfo();
             }
 
             return null;
