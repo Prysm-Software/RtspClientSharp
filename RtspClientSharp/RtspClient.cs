@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Security.Authentication;
 using System.Threading;
 using System.Threading.Tasks;
 using RtspClientSharp.RawFrames;
 using RtspClientSharp.Rtsp;
+using RtspClientSharp.Sdp;
 using RtspClientSharp.Utils;
 
 namespace RtspClientSharp
@@ -20,6 +22,8 @@ namespace RtspClientSharp
 
         public event EventHandler<RawFrame> FrameReceived;
         public event EventHandler<byte[]> NaluReceived;
+        public string Sdp => _rtspClientInternal?.Sdp;
+        public IEnumerable<RtspMediaTrackInfo> Tracks => _rtspClientInternal?.Tracks;
 
         public RtspClient(ConnectionParameters connectionParameters)
         {

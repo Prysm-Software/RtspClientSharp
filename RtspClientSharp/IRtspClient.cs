@@ -1,17 +1,21 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Security.Authentication;
 using System.Threading;
 using System.Threading.Tasks;
 using RtspClientSharp.RawFrames;
 using RtspClientSharp.Rtsp;
+using RtspClientSharp.Sdp;
 
 namespace RtspClientSharp
 {
     public interface IRtspClient : IDisposable
     {
         ConnectionParameters ConnectionParameters { get; }
-
         event EventHandler<RawFrame> FrameReceived;
+        event EventHandler<byte[]> NaluReceived;
+        string Sdp { get; }
+        IEnumerable<RtspMediaTrackInfo> Tracks { get; }
 
         /// <summary>
         /// Connect to endpoint and start RTSP session

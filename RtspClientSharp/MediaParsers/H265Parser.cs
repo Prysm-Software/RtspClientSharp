@@ -1,5 +1,4 @@
-﻿using Logger;
-using RtspClientSharp.RawFrames;
+﻿using RtspClientSharp.RawFrames;
 using RtspClientSharp.RawFrames.Video;
 using RtspClientSharp.Rtp;
 using RtspClientSharp.Utils;

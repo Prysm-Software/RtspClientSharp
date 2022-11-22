@@ -18,7 +18,7 @@ namespace RtspClientSharp.MediaParsers
         private bool _usingDonlField;
         private TimeSpan _timeOffset = TimeSpan.MinValue;
 
-        public H265VideoPayloadParser(H265CodecInfo codecInfo, Action<byte[]> naluReceived)
+        public H265VideoPayloadParser(H265CodecInfo codecInfo, Action<byte[]> naluReceived = null)
         {
             NaluReceived = naluReceived;
             ValidateCodecInfo(codecInfo);

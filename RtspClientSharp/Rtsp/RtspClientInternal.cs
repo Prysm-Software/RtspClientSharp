@@ -52,6 +52,8 @@ namespace RtspClientSharp.Rtsp
 
         public Action<RawFrame> FrameReceived;
         public Action<byte[]> NaluReceived;
+        public string Sdp { get; private set; }
+        public IEnumerable<RtspMediaTrackInfo> Tracks { get; private set; }
 
         public RtspClientInternal(ConnectionParameters connectionParameters,
             Func<IRtspTransportClient> transportClientProvider = null)
@@ -92,16 +94,23 @@ namespace RtspClientSharp.Rtsp
             var parser = new SdpParser();
             IEnumerable<RtspTrackInfo> tracks = parser.Parse(describeResponse.ResponseBody);
 
+            Sdp = parser.Sdp;
+
             bool anyTrackRequested = false;
 
+            var mediaTracks = new List<RtspMediaTrackInfo>();
             foreach (RtspMediaTrackInfo track in GetTracksToSetup(tracks))
             {
                 await SetupTrackAsync(requestParams.InitialTimestamp, track, requestParams.Token);
                 anyTrackRequested = true;
+
+                mediaTracks.Add(track);
             }
+            Tracks = mediaTracks;
 
             if (!anyTrackRequested)
                 throw new RtspClientException("Any suitable track is not found");
+
 
             // TODO: Seems like some timestamps are being returned with 2 different timezones and/or some difference between the requested datetime and the returned one.
             RtspRequestMessage playRequest = requestParams.IsSetTimestampInClock ? _requestMessageFactory.CreatePlayRequest(requestParams) : _requestMessageFactory.CreatePlayRequest();

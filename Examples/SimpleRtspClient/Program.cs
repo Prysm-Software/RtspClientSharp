@@ -11,10 +11,12 @@ namespace SimpleRtspClient
     {
         static void Main()
         {
-            var serverUri = new Uri("rtsp://192.168.40.31/onvif-media/media.amp?profile=profile_2_h264");
-            var credentials = new NetworkCredential("root", "pass");
+            //var serverUri = new Uri("rtsp://root:pass@192.168.40.31/onvif-media/media.amp?profile=profile_2_h264");
+            var serverUri = new Uri("rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mp4");
+            //var serverUri = new Uri("rtsp://192.168.40.31/onvif-media/media.amp?profile=profile_2_h264");
+            //var credentials = new NetworkCredential("root", "pass");
 
-            var connectionParameters = new ConnectionParameters(serverUri, credentials);
+            var connectionParameters = new ConnectionParameters(serverUri);
             var cancellationTokenSource = new CancellationTokenSource();
 
             Task connectTask = ConnectAsync(connectionParameters, cancellationTokenSource.Token);
@@ -62,6 +64,8 @@ namespace SimpleRtspClient
                         }
 
                         Console.WriteLine("Connected.");
+                        Console.WriteLine("Got SDP :");
+                        Console.WriteLine(rtspClient.Sdp);
 
                         try
                         {

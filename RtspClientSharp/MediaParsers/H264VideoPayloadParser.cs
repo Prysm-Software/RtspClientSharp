@@ -27,9 +27,9 @@ namespace RtspClientSharp.MediaParsers
         private bool _waitForStartFu = true;
         private TimeSpan _timeOffset = TimeSpan.MinValue;
 
-        public H264VideoPayloadParser(H264CodecInfo codecInfo, Action<byte[]> naluReceived)
+        public H264VideoPayloadParser(H264CodecInfo codecInfo, Action<byte[]> naluReceived = null)
         {
-            NaluReceived= naluReceived;
+            NaluReceived = naluReceived;
 
             if (codecInfo == null)
                 throw new ArgumentNullException(nameof(codecInfo));

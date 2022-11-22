@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using Logger;
 using RtspClientSharp.Codecs;
 using RtspClientSharp.Codecs.Audio;
 using RtspClientSharp.Codecs.Data;
@@ -28,6 +27,8 @@ namespace RtspClientSharp.Sdp
             }
         }
 
+        public string Sdp { get; private set; }
+
         private readonly Dictionary<int, PayloadFormatInfo> _payloadFormatNumberToInfoMap =
             new Dictionary<int, PayloadFormatInfo>();
 
@@ -45,6 +46,9 @@ namespace RtspClientSharp.Sdp
 
             var sdpStream = new MemoryStream(payloadSegment.Array, payloadSegment.Offset, payloadSegment.Count);
             var sdpStreamReader = new StreamReader(sdpStream);
+
+            Sdp = sdpStreamReader.ReadToEnd();
+            sdpStreamReader.BaseStream.Position = 0;
 
             string line;
             while (!string.IsNullOrEmpty(line = sdpStreamReader.ReadLine()))

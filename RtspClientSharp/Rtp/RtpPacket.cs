@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics;
-using Logger;
 using RtspClientSharp.Utils;
 
 namespace RtspClientSharp.Rtp
