@@ -1,5 +1,6 @@
 ﻿using RtspClientSharp.MediaParsers;
 using System;
+using System.Linq;
 
 namespace RtspClientSharp.Rtp
 {
@@ -20,12 +21,17 @@ namespace RtspClientSharp.Rtp
         public int PacketsLostSinceLastReset { get; private set; }
         public uint CumulativePacketLost { get; private set; }
         public ushort SequenceCycles { get; private set; }
+        public Action<byte[]> OnPacket { get; }
 
-        public RtpStream(IMediaPayloadParser mediaPayloadParser, int samplesFrequency,
-            IRtpSequenceAssembler rtpSequenceAssembler = null)
+        public RtpStream(
+            IMediaPayloadParser mediaPayloadParser,
+            int samplesFrequency,
+            IRtpSequenceAssembler rtpSequenceAssembler = null,
+            Action<byte[]> onPacket = null)
         {
             _mediaPayloadParser = mediaPayloadParser ?? throw new ArgumentNullException(nameof(mediaPayloadParser));
             _samplesFrequency = samplesFrequency;
+            OnPacket = onPacket;
 
             if (rtpSequenceAssembler != null)
             {
@@ -38,6 +44,8 @@ namespace RtspClientSharp.Rtp
         {
             if (!RtpPacket.TryParse(payloadSegment, out RtpPacket rtpPacket))
                 return;
+
+            OnPacket?.Invoke(payloadSegment.ToArray());
 
             if (_rtpSequenceAssembler != null)
                 _rtpSequenceAssembler.ProcessPacket(ref rtpPacket);

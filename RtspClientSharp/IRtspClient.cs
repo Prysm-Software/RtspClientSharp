@@ -12,10 +12,11 @@ namespace RtspClientSharp
     public interface IRtspClient : IDisposable
     {
         ConnectionParameters ConnectionParameters { get; }
+        RtspClientDescription ClientDescription { get; }
+        
         event EventHandler<RawFrame> FrameReceived;
         event EventHandler<byte[]> NaluReceived;
-        string Sdp { get; }
-        IEnumerable<RtspMediaTrackInfo> Tracks { get; }
+
 
         /// <summary>
         /// Connect to endpoint and start RTSP session

@@ -52,8 +52,9 @@ namespace RtspClientSharp.Rtsp
 
         public Action<RawFrame> FrameReceived;
         public Action<byte[]> NaluReceived;
-        public string Sdp { get; private set; }
-        public IEnumerable<RtspMediaTrackInfo> Tracks { get; private set; }
+        public Action<IRtpFrame> RtpReceived;
+        public RtspClientDescription ClientDescription { get; private set; }
+
 
         public RtspClientInternal(ConnectionParameters connectionParameters,
             Func<IRtspTransportClient> transportClientProvider = null)
@@ -94,8 +95,6 @@ namespace RtspClientSharp.Rtsp
             var parser = new SdpParser();
             IEnumerable<RtspTrackInfo> tracks = parser.Parse(describeResponse.ResponseBody);
 
-            Sdp = parser.Sdp;
-
             bool anyTrackRequested = false;
 
             var mediaTracks = new List<RtspMediaTrackInfo>();
@@ -106,7 +105,8 @@ namespace RtspClientSharp.Rtsp
 
                 mediaTracks.Add(track);
             }
-            Tracks = mediaTracks;
+
+            ClientDescription = new RtspClientDescription(parser.Sdp, mediaTracks);
 
             if (!anyTrackRequested)
                 throw new RtspClientException("Any suitable track is not found");
@@ -324,7 +324,7 @@ namespace RtspClientSharp.Rtsp
                 _mediaPayloadParser.FrameGenerated = OnFrameGeneratedThreadSafe;
             }
 
-            var rtpStream = new RtpStream(_mediaPayloadParser, track.SamplesFrequency, rtpSequenceAssembler);
+            var rtpStream = new RtpStream(_mediaPayloadParser, track.SamplesFrequency, rtpSequenceAssembler, p => RtpReceived?.Invoke(new RtpFrameOverTcp(p)));
             _streamsMap.Add(rtpChannelNumber, rtpStream);
 
             var rtcpStream = new RtcpStream();
@@ -368,8 +368,7 @@ namespace RtspClientSharp.Rtsp
             {
                 if (track.Codec is VideoCodecInfo && (_connectionParameters.RequiredTracks & RequiredTracks.Video) != 0)
                     yield return track;
-                else if (track.Codec is AudioCodecInfo &&
-                         (_connectionParameters.RequiredTracks & RequiredTracks.Audio) != 0)
+                else if (track.Codec is AudioCodecInfo && (_connectionParameters.RequiredTracks & RequiredTracks.Audio) != 0)
                     yield return track;
                 else if (track.Codec is DataCodecInfo && (_connectionParameters.RequiredTracks & RequiredTracks.Data) != 0)
                     yield return track;
@@ -571,7 +570,7 @@ namespace RtspClientSharp.Rtsp
                 if (transportStream is RtpStream rtpStream)
                 {
                     RtcpReceiverReportsProvider receiverReportsProvider = _reportProvidersMap[channelNumber];
-                    receiveTask = ReceiveRtpFromUdpAsync(client, rtpStream, receiverReportsProvider, token);
+                    receiveTask = ReceiveRtpFromUdpAsync(client, rtpStream, receiverReportsProvider, channelNumber, token);
                 }
                 else
                     receiveTask = ReceiveRtcpFromUdpAsync(client, transportStream, token);
@@ -582,8 +581,11 @@ namespace RtspClientSharp.Rtsp
             return Task.WhenAll(waitList);
         }
 
-        private async Task ReceiveRtpFromUdpAsync(Socket client, RtpStream rtpStream,
+        private async Task ReceiveRtpFromUdpAsync(
+            Socket client, 
+            RtpStream rtpStream,
             RtcpReceiverReportsProvider reportsProvider,
+            int channel,
             CancellationToken token)
         {
             var readBuffer = new byte[Constants.UdpReceiveBufferSize];
@@ -598,6 +600,9 @@ namespace RtspClientSharp.Rtsp
                 int read = await client.ReceiveAsync(bufferSegment, SocketFlags.None);
 
                 var payloadSegment = new ArraySegment<byte>(readBuffer, 0, read);
+
+                RtpReceived?.Invoke(new RtpFrameOverUdp(payloadSegment.ToArray(), channel));
+
                 rtpStream.Process(payloadSegment);
 
                 int ticksNow = Environment.TickCount;

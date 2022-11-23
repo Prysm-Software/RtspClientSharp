@@ -5,6 +5,7 @@ using System.Security.Authentication;
 using System.Threading;
 using System.Threading.Tasks;
 using RtspClientSharp.RawFrames;
+using RtspClientSharp.Rtp;
 using RtspClientSharp.Rtsp;
 using RtspClientSharp.Sdp;
 using RtspClientSharp.Utils;
@@ -22,8 +23,8 @@ namespace RtspClientSharp
 
         public event EventHandler<RawFrame> FrameReceived;
         public event EventHandler<byte[]> NaluReceived;
-        public string Sdp => _rtspClientInternal?.Sdp;
-        public IEnumerable<RtspMediaTrackInfo> Tracks => _rtspClientInternal?.Tracks;
+        public event EventHandler<IRtpFrame> RtpReceived;
+        public RtspClientDescription ClientDescription => _rtspClientInternal?.ClientDescription;    
 
         public RtspClient(ConnectionParameters connectionParameters)
         {
@@ -59,7 +60,7 @@ namespace RtspClientSharp
 
                 try
                 {
-                    Task connectionTask = _rtspClientInternal.ConnectAsync(requestParams);
+                    var connectionTask = _rtspClientInternal.ConnectAsync(requestParams);
 
                     if (connectionTask.IsCompleted)
                     {
@@ -226,6 +227,10 @@ namespace RtspClientSharp
                 NaluReceived = buf =>
                 {
                     NaluReceived?.Invoke(this, buf);
+                },
+                RtpReceived = rtp =>
+                {
+                    RtpReceived?.Invoke(this, rtp);
                 }
             };
         }
