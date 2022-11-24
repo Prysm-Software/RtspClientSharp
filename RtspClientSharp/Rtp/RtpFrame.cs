@@ -4,13 +4,15 @@ using System.Text;
 
 namespace RtspClientSharp.Rtp
 {
-    public class RtpFrameOverTcp : IRtpFrame
+    public class RtpFrame
     {
+        public int Channel { get; }
         public byte[] Data { get; }
 
-        public RtpFrameOverTcp(byte[] data)
+        public RtpFrame(byte[] data, int channel)
         {
             Data = data;
+            Channel = channel;
         }
     }
 }

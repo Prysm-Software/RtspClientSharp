@@ -4,13 +4,14 @@ using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using RtspClientSharp.Rtp;
 using RtspClientSharp.Utils;
 
 namespace RtspClientSharp.Tpkt
 {
     class TpktStream
     {
-        private static readonly byte[] TpktHeaderIdArray = {TpktHeader.Id};
+        private static readonly byte[] TpktHeaderIdArray = { TpktHeader.Id };
 
         private byte[] _readBuffer = new byte[8 * 1024];
         private byte[] _writeBuffer = new byte[0];
@@ -20,7 +21,7 @@ namespace RtspClientSharp.Tpkt
 
         private readonly Stream _stream;
 
-        public Action<byte[]> OnPacketReceived;
+        public Action<RtpFrame> OnFrameReceived;
 
         public TpktStream(Stream stream)
         {
@@ -35,9 +36,9 @@ namespace RtspClientSharp.Tpkt
             if (nextTpktPositon != 0)
                 Buffer.BlockCopy(_readBuffer, nextTpktPositon, _readBuffer, 0, usefulDataSize);
 
-            OnPacketReceived?.Invoke(_readBuffer.Take(usefulDataSize).ToArray());
-
             int readCount = TpktHeader.Size - usefulDataSize;
+            byte[] copy = new byte[usefulDataSize];
+            Array.Copy(_readBuffer, copy, usefulDataSize);
 
             if (readCount > 0)
             {
@@ -50,6 +51,7 @@ namespace RtspClientSharp.Tpkt
             int channel = _readBuffer[1];
             int payloadSize = BigEndianConverter.ReadUInt16(_readBuffer, 2);
             int totalSize = TpktHeader.Size + payloadSize;
+            OnFrameReceived?.Invoke(new RtpFrame(copy, channel));
 
             if (_readBuffer.Length < totalSize)
             {
@@ -86,9 +88,9 @@ namespace RtspClientSharp.Tpkt
                 _writeBuffer[0] = TpktHeader.Id;
             }
 
-            _writeBuffer[1] = (byte) channel;
-            _writeBuffer[2] = (byte) (payloadSegment.Count >> 8);
-            _writeBuffer[3] = (byte) payloadSegment.Count;
+            _writeBuffer[1] = (byte)channel;
+            _writeBuffer[2] = (byte)(payloadSegment.Count >> 8);
+            _writeBuffer[3] = (byte)payloadSegment.Count;
 
             Buffer.BlockCopy(payloadSegment.Array, payloadSegment.Offset, _writeBuffer, TpktHeader.Size,
                 payloadSegment.Count);

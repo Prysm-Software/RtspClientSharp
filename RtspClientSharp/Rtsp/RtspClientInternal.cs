@@ -52,7 +52,7 @@ namespace RtspClientSharp.Rtsp
 
         public Action<RawFrame> FrameReceived;
         public Action<byte[]> NaluReceived;
-        public Action<IRtpFrame> RtpReceived;
+        public Action<RtpFrame> RtpReceived;
         public RtspClientDescription ClientDescription { get; private set; }
 
 
@@ -524,7 +524,7 @@ namespace RtspClientSharp.Rtsp
         {
             _tpktStream = new TpktStream(rtspStream)
             {
-                OnPacketReceived = b => RtpReceived?.Invoke(new RtpFrameOverTcp(b))
+                OnFrameReceived = f => RtpReceived?.Invoke(f)
             };
 
             int nextRtcpReportInterval = GetNextRtcpReportIntervalMs();
@@ -604,7 +604,7 @@ namespace RtspClientSharp.Rtsp
 
                 var payloadSegment = new ArraySegment<byte>(readBuffer, 0, read);
 
-                RtpReceived?.Invoke(new RtpFrameOverUdp(payloadSegment.ToArray(), channel));
+                RtpReceived?.Invoke(new RtpFrame(payloadSegment.ToArray(), channel));
 
                 rtpStream.Process(payloadSegment);
 
