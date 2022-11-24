@@ -19,7 +19,7 @@ namespace SimpleRtspClient
 
             var connectionParameters = new ConnectionParameters(serverUri)
             {
-                RtpTransport = RtpTransportProtocol.UDP
+                RtpTransport = RtpTransportProtocol.TCP
             };
             var cancellationTokenSource = new CancellationTokenSource();
 
@@ -42,8 +42,8 @@ namespace SimpleRtspClient
 
                 using (var rtspClient = new RtspClient(connectionParameters))
                 {
-                    rtspClient.FrameReceived += (sender, frame) => Console.WriteLine($"New frame {frame.Timestamp}: {frame.GetType().Name}");
-                    rtspClient.NaluReceived += (s, data) => Console.WriteLine($"nalu {data.Length}");
+                    //rtspClient.FrameReceived += (sender, frame) => Console.WriteLine($"New frame {frame.Timestamp}: {frame.GetType().Name}");
+                    //rtspClient.NaluReceived += (s, data) => Console.WriteLine($"nalu {data.Length}");
                     rtspClient.RtpReceived += (s, data) =>
                     {
                         if (data is RtpFrameOverUdp udpFrame)

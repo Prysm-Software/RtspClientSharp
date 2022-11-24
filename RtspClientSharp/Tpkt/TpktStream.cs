@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using RtspClientSharp.Utils;
@@ -19,6 +20,8 @@ namespace RtspClientSharp.Tpkt
 
         private readonly Stream _stream;
 
+        public Action<byte[]> OnPacketReceived;
+
         public TpktStream(Stream stream)
         {
             _stream = stream ?? throw new ArgumentNullException(nameof(stream));
@@ -27,11 +30,12 @@ namespace RtspClientSharp.Tpkt
         public async Task<TpktPayload> ReadAsync()
         {
             int nextTpktPositon = await FindNextPacketAsync();
-
             int usefulDataSize = _nonParsedDataSize - nextTpktPositon;
 
             if (nextTpktPositon != 0)
                 Buffer.BlockCopy(_readBuffer, nextTpktPositon, _readBuffer, 0, usefulDataSize);
+
+            OnPacketReceived?.Invoke(_readBuffer.Take(usefulDataSize).ToArray());
 
             int readCount = TpktHeader.Size - usefulDataSize;
 

@@ -324,7 +324,7 @@ namespace RtspClientSharp.Rtsp
                 _mediaPayloadParser.FrameGenerated = OnFrameGeneratedThreadSafe;
             }
 
-            var rtpStream = new RtpStream(_mediaPayloadParser, track.SamplesFrequency, rtpSequenceAssembler, p => RtpReceived?.Invoke(new RtpFrameOverTcp(p)));
+            var rtpStream = new RtpStream(_mediaPayloadParser, track.SamplesFrequency, rtpSequenceAssembler);
             _streamsMap.Add(rtpChannelNumber, rtpStream);
 
             var rtcpStream = new RtcpStream();
@@ -522,7 +522,10 @@ namespace RtspClientSharp.Rtsp
 
         private async Task ReceiveOverTcpAsync(Stream rtspStream, CancellationToken token)
         {
-            _tpktStream = new TpktStream(rtspStream);
+            _tpktStream = new TpktStream(rtspStream)
+            {
+                OnPacketReceived = b => RtpReceived?.Invoke(new RtpFrameOverTcp(b))
+            };
 
             int nextRtcpReportInterval = GetNextRtcpReportIntervalMs();
             int lastTimeRtcpReportsSent = Environment.TickCount;
