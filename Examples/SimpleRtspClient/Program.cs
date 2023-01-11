@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,14 +13,15 @@ namespace SimpleRtspClient
     {
         static void Main()
         {
-            var serverUri = new Uri("rtsp://root:pass@192.168.40.31/onvif-media/media.amp?profile=profile_2_h264");
+            var serverUri = new Uri("rtsp://root:pass@192.168.40.31/onvif-media/media.amp?profile=profile_2_h264"); // axis acceuil
+            //var serverUri = new Uri("rtsp://192.168.40.22/LiveChannel2/media.smp"); // wisenet
             //var serverUri = new Uri("rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mp4");
             //var serverUri = new Uri("rtsp://192.168.40.31/onvif-media/media.amp?profile=profile_2_h264");
             //var credentials = new NetworkCredential("root", "pass");
 
             var connectionParameters = new ConnectionParameters(serverUri)
             {
-                RtpTransport = RtpTransportProtocol.UDP
+                RtpTransport = RtpTransportProtocol.TCP
             };
             var cancellationTokenSource = new CancellationTokenSource();
 
@@ -42,14 +44,11 @@ namespace SimpleRtspClient
 
                 using (var rtspClient = new RtspClient(connectionParameters))
                 {
-                    rtspClient.FrameReceived += (sender, frame) => Console.WriteLine($"New frame {frame.Timestamp}: {frame.GetType().Name}");
-                    rtspClient.NaluReceived += (s, data) => Console.WriteLine($"nalu {data.Length}");
-                    rtspClient.RtpReceived += (s, data) =>
+                    //rtspClient.FrameReceived += (sender, frame) => Console.WriteLine($"New frame {frame.Timestamp}: {frame.GetType().Name}");
+                    //rtspClient.NaluReceived += (s, data) => Console.WriteLine($"nalu {data.Length}");
+                    rtspClient.RtpReceived += (s, frame) =>
                     {
-                        if (data is RtpFrameOverUdp udpFrame)
-                            Console.WriteLine($"rtp on channel {udpFrame.Channel} {udpFrame.Data.Length}");
-                        else
-                            Console.WriteLine($"rtp {data.Data.Length}");
+                        Console.WriteLine($"rtp on channel {frame.Channel} {BitConverter.ToString(frame.Data.Take(10).ToArray())}");
                     };
 
                     while (true)

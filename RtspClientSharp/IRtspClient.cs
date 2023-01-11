@@ -4,6 +4,7 @@ using System.Security.Authentication;
 using System.Threading;
 using System.Threading.Tasks;
 using RtspClientSharp.RawFrames;
+using RtspClientSharp.Rtp;
 using RtspClientSharp.Rtsp;
 using RtspClientSharp.Sdp;
 
@@ -16,6 +17,7 @@ namespace RtspClientSharp
         
         event EventHandler<RawFrame> FrameReceived;
         event EventHandler<byte[]> NaluReceived;
+        event EventHandler<RtpFrame> RtpReceived;
 
 
         /// <summary>
