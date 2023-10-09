@@ -4,7 +4,7 @@ using System.Text;
 
 namespace RtspClientSharp.Codecs.Data
 {
-    class OnvifMetadataCodecInfo : DataCodecInfo
+    public class OnvifMetadataCodecInfo : DataCodecInfo
     {
     }
 }

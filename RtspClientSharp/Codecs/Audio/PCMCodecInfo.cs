@@ -1,6 +1,6 @@
 ﻿namespace RtspClientSharp.Codecs.Audio
 {
-    class PCMCodecInfo : AudioCodecInfo
+    public class PCMCodecInfo : AudioCodecInfo
     {
         public int SampleRate { get; }
 

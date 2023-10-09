@@ -1,6 +1,6 @@
 ﻿namespace RtspClientSharp.Codecs.Audio
 {
-    class G726CodecInfo : AudioCodecInfo
+    public class G726CodecInfo : AudioCodecInfo
     {
         public int Bitrate { get; }
 

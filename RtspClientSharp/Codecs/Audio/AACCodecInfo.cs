@@ -1,6 +1,6 @@
 ﻿namespace RtspClientSharp.Codecs.Audio
 {
-    class AACCodecInfo : AudioCodecInfo
+    public class AACCodecInfo : AudioCodecInfo
     {
         public byte[] ConfigBytes { get; set; }
         public int SizeLength { get; set; }

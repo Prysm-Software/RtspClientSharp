@@ -1,6 +1,6 @@
 ﻿namespace RtspClientSharp.Codecs.Video
 {
-    class MJPEGCodecInfo : VideoCodecInfo
+    public class MJPEGCodecInfo : VideoCodecInfo
     {
     }
 }

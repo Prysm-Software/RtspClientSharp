@@ -1,6 +1,6 @@
 ﻿namespace RtspClientSharp.Codecs.Audio
 {
-    class G711ACodecInfo : G711CodecInfo
+    public class G711ACodecInfo : G711CodecInfo
     {
     }
 }
