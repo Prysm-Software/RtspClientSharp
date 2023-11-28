@@ -143,8 +143,8 @@ namespace RtspClientSharp.MediaParsers
                 throw new H265ParserException($"Invalid LayerId { layerId }.");
 
             //The value of TemporalId is equal to TID minus 1. A TID value of 0 is illegal...
-            if (temporalId == 0)
-                throw new H265ParserException($"Invalid TemporalId (TID) { temporalId }.");
+            //if (temporalId == 0)
+            //    throw new H265ParserException($"Invalid TemporalId (TID) { temporalId }.");
 
             //Checking Nal unit type
             if (!RtpH265TypeUtils.CheckIfIsValid(nalUnitType))
