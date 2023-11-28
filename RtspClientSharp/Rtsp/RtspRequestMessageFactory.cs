@@ -82,6 +82,18 @@ namespace RtspClientSharp.Rtsp
             return rtspRequestMessage;
         }
 
+        public RtspRequestMessage CreatePauseRequest(RtspRequestParams connectionParams = null)
+        {
+            Uri uri = GetContentBasedUri();
+
+            var rtspRequestMessage = new RtspRequestMessage(RtspMethod.PAUSE, uri, ProtocolVersion, NextCSeqProvider, _userAgent, SessionId);
+            if (connectionParams?.Headers != null)
+                foreach (var item in connectionParams.Headers)
+                    rtspRequestMessage.Headers.Add(item.Key, item.Value);
+
+            return rtspRequestMessage;
+        }
+
         public RtspRequestMessage CreateTeardownRequest()
         {
             var rtspRequestMessage = new RtspRequestMessage(RtspMethod.TEARDOWN, _rtspUri, ProtocolVersion,

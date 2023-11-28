@@ -18,6 +18,7 @@ namespace RtspClientSharp
         private bool _anyFrameReceived;
         private RtspClientInternal _rtspClientInternal;
         private int _disposed;
+        private bool _paused;
 
         public ConnectionParameters ConnectionParameters { get; }
 
@@ -179,7 +180,7 @@ namespace RtspClientSharp
                             throw new OperationCanceledException();
                         }
 
-                        if (!Volatile.Read(ref _anyFrameReceived))
+                        if (!Volatile.Read(ref _anyFrameReceived) && !_paused)
                         {
                             receiveInternalTask.IgnoreExceptions();
                             throw new RtspClientException("Receive timeout", new TimeoutException());
@@ -208,6 +209,28 @@ namespace RtspClientSharp
                 _rtspClientInternal.Dispose();
                 Volatile.Write(ref _rtspClientInternal, null);
             }
+        }
+
+        /// <summary>
+        /// Send an RTSP play request
+        /// </summary>
+        /// <param name="requestParams"></param>
+        /// <returns></returns>
+        public async Task PlayAsync(RtspRequestParams requestParams)
+        {
+            await _rtspClientInternal.SendPlayRequest(requestParams);
+            _paused = false;
+        }
+
+        /// <summary>
+        /// Send an RTSP pause request
+        /// </summary>
+        /// <param name="requestParams"></param>
+        /// <returns></returns>
+        public async Task PauseAsync(RtspRequestParams requestParams)
+        {
+            await _rtspClientInternal.SendPauseRequest(requestParams);
+            _paused = true;
         }
 
         /// <summary>

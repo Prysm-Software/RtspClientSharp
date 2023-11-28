@@ -186,6 +186,27 @@ namespace RtspClientSharp.Rtsp
                 _rtspTransportClient.Dispose();
         }
 
+        public async Task SendPlayRequest(RtspRequestParams requestParams)
+        {
+            RtspRequestMessage request = requestParams.IsSetTimestampInClock
+                ? _requestMessageFactory.CreatePlayRequest(requestParams)
+                : _requestMessageFactory.CreatePlayRequest();
+
+            if (_connectionParameters.RtpTransport == RtpTransportProtocol.TCP)
+                await _rtspTransportClient.SendRequestAsync(request, requestParams.Token);
+            else
+                await _rtspTransportClient.EnsureExecuteRequest(request, requestParams.Token);
+        }
+
+        public async Task SendPauseRequest(RtspRequestParams requestParams)
+        {
+            RtspRequestMessage request = _requestMessageFactory.CreatePauseRequest();
+            if (_connectionParameters.RtpTransport == RtpTransportProtocol.TCP)
+                await _rtspTransportClient.SendRequestAsync(request, requestParams.Token);
+            else
+                await _rtspTransportClient.EnsureExecuteRequest(request, requestParams.Token);
+        }
+
         private IRtspTransportClient CreateTransportClient()
         {
             if (_connectionParameters.ConnectionUri.Scheme.Equals(Uri.UriSchemeHttp,
@@ -585,7 +606,7 @@ namespace RtspClientSharp.Rtsp
         }
 
         private async Task ReceiveRtpFromUdpAsync(
-            Socket client, 
+            Socket client,
             RtpStream rtpStream,
             RtcpReceiverReportsProvider reportsProvider,
             int channel,
