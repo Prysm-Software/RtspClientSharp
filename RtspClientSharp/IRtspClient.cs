@@ -17,7 +17,6 @@ namespace RtspClientSharp
         
         event EventHandler<RawFrame> FrameReceived;
         event EventHandler<byte[]> NaluReceived;
-        event EventHandler<RtpFrame> RtpReceived;
 
 
         /// <summary>

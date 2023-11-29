@@ -24,7 +24,6 @@ namespace RtspClientSharp
 
         public event EventHandler<RawFrame> FrameReceived;
         public event EventHandler<byte[]> NaluReceived;
-        public event EventHandler<RtpFrame> RtpReceived;
         public RtspClientDescription ClientDescription => _rtspClientInternal?.ClientDescription;    
 
         public RtspClient(ConnectionParameters connectionParameters)
