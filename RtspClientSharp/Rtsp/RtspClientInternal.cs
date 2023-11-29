@@ -52,7 +52,6 @@ namespace RtspClientSharp.Rtsp
 
         public Action<RawFrame> FrameReceived;
         public Action<byte[]> NaluReceived;
-        public Action<RtpFrame> RtpReceived;
         public RtspClientDescription ClientDescription { get; private set; }
 
 
@@ -543,11 +542,7 @@ namespace RtspClientSharp.Rtsp
 
         private async Task ReceiveOverTcpAsync(Stream rtspStream, CancellationToken token)
         {
-            _tpktStream = new TpktStream(rtspStream)
-            {
-                OnFrameReceived = f => RtpReceived?.Invoke(f)
-            };
-
+            _tpktStream = new TpktStream(rtspStream);
             int nextRtcpReportInterval = GetNextRtcpReportIntervalMs();
             int lastTimeRtcpReportsSent = Environment.TickCount;
             var bufferStream = new MemoryStream();
@@ -624,9 +619,6 @@ namespace RtspClientSharp.Rtsp
                 int read = await client.ReceiveAsync(bufferSegment, SocketFlags.None);
 
                 var payloadSegment = new ArraySegment<byte>(readBuffer, 0, read);
-
-                RtpReceived?.Invoke(new RtpFrame(payloadSegment.ToArray(), channel));
-
                 rtpStream.Process(payloadSegment);
 
                 int ticksNow = Environment.TickCount;

@@ -261,10 +261,6 @@ namespace RtspClientSharp
                 NaluReceived = buf =>
                 {
                     NaluReceived?.Invoke(this, buf);
-                },
-                RtpReceived = rtp =>
-                {
-                    RtpReceived?.Invoke(this, rtp);
                 }
             };
         }

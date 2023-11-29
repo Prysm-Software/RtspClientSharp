@@ -21,8 +21,6 @@ namespace RtspClientSharp.Tpkt
 
         private readonly Stream _stream;
 
-        public Action<RtpFrame> OnFrameReceived;
-
         public TpktStream(Stream stream)
         {
             _stream = stream ?? throw new ArgumentNullException(nameof(stream));
@@ -51,7 +49,6 @@ namespace RtspClientSharp.Tpkt
             int channel = _readBuffer[1];
             int payloadSize = BigEndianConverter.ReadUInt16(_readBuffer, 2);
             int totalSize = TpktHeader.Size + payloadSize;
-            OnFrameReceived?.Invoke(new RtpFrame(copy, channel));
 
             if (_readBuffer.Length < totalSize)
             {
