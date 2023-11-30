@@ -53,22 +53,22 @@ namespace RtspClientSharp.Rtsp
             _tcpClient?.Close();
         }
 
-        protected override Task WriteAsync(byte[] buffer, int offset, int count)
+        protected override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken token)
         {
             Debug.Assert(_networkStream != null, "_networkStream != null");
             return _networkStream.WriteAsync(buffer, offset, count);
         }
 
-        protected override Task<int> ReadAsync(byte[] buffer, int offset, int count)
+        protected override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken token)
         {
             Debug.Assert(_networkStream != null, "_networkStream != null");
-            return _networkStream.ReadAsync(buffer, offset, count);
+            return _networkStream.ReadAsync(buffer, offset, count, token);
         }
 
-        protected override Task ReadExactAsync(byte[] buffer, int offset, int count)
+        protected override Task ReadExactAsync(byte[] buffer, int offset, int count, CancellationToken token)
         {
             Debug.Assert(_networkStream != null, "_networkStream != null");
-            return _networkStream.ReadExactAsync(buffer, offset, count);
+            return _networkStream.ReadExactAsync(buffer, offset, count, token);
         }
     }
 }

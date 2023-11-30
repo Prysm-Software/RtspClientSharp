@@ -28,8 +28,7 @@ namespace RtspClientSharp.Rtsp
 
         public abstract Stream GetStream();
 
-        public async Task<RtspResponseMessage> EnsureExecuteRequest(RtspRequestMessage requestMessage,
-            CancellationToken token, int responseReadPortionSize = 0)
+        public async Task<RtspResponseMessage> EnsureExecuteRequest(RtspRequestMessage requestMessage, CancellationToken token, int responseReadPortionSize = 0)
         {
             RtspResponseMessage responseMessage = await ExecuteRequest(requestMessage, token, responseReadPortionSize);
 
@@ -39,14 +38,13 @@ namespace RtspClientSharp.Rtsp
             return responseMessage;
         }
 
-        public async Task<RtspResponseMessage> ExecuteRequest(RtspRequestMessage requestMessage,
-            CancellationToken token, int responseReadPortionSize = 0)
+        public async Task<RtspResponseMessage> ExecuteRequest(RtspRequestMessage requestMessage, CancellationToken token, int responseReadPortionSize = 0)
         {
             token.ThrowIfCancellationRequested();
 
             await SendRequestAsync(requestMessage, token);
 
-            RtspResponseMessage responseMessage = await GetResponseAsync(responseReadPortionSize);
+            RtspResponseMessage responseMessage = await GetResponseAsync(token, responseReadPortionSize);
 
             if (responseMessage.StatusCode != RtspStatusCode.Unauthorized)
                 return responseMessage;
@@ -63,7 +61,7 @@ namespace RtspClientSharp.Rtsp
             requestMessage.UpdateSequenceNumber();
 
             await SendRequestAsync(requestMessage, token);
-            responseMessage = await GetResponseAsync();
+            responseMessage = await GetResponseAsync(token);
 
             if (responseMessage.StatusCode == RtspStatusCode.Unauthorized)
                 throw new RtspBadResponseCodeException(responseMessage.StatusCode);
@@ -81,18 +79,18 @@ namespace RtspClientSharp.Rtsp
             string requestMessageString = requestMessage.ToString();
 
             int written = Encoding.ASCII.GetBytes(requestMessageString, 0, requestMessageString.Length, _buffer, 0);
-            return WriteAsync(_buffer, 0, written);
+            return WriteAsync(_buffer, 0, written, token);
         }
 
         public abstract void Dispose();
 
-        protected abstract Task WriteAsync(byte[] buffer, int offset, int count);
-        protected abstract Task<int> ReadAsync(byte[] buffer, int offset, int count);
-        protected abstract Task ReadExactAsync(byte[] buffer, int offset, int count);
+        protected abstract Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken token);
+        protected abstract Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken token);
+        protected abstract Task ReadExactAsync(byte[] buffer, int offset, int count, CancellationToken token);
 
-        private async Task<RtspResponseMessage> GetResponseAsync(int responseReadPortionSize = 0)
+        private async Task<RtspResponseMessage> GetResponseAsync(CancellationToken token, int responseReadPortionSize = 0)
         {
-            int totalRead = await ReadUntilEndOfHeadersAsync(responseReadPortionSize);
+            int totalRead = await ReadUntilEndOfHeadersAsync(token, responseReadPortionSize);
 
             int startOfResponse = ArrayUtils.IndexOfBytes(_buffer, Constants.RtspProtocolNameBytes, 0, totalRead);
 
@@ -126,13 +124,13 @@ namespace RtspClientSharp.Rtsp
             int dataPartSize = totalRead - headersByteSegment.Count;
 
             Buffer.BlockCopy(_buffer, endOfResponseHeaders, _buffer, 0, dataPartSize);
-            await ReadExactAsync(_buffer, dataPartSize, (int) (contentLength - dataPartSize));
+            await ReadExactAsync(_buffer, dataPartSize, (int)(contentLength - dataPartSize), token);
 
-            rtspResponseMessage.ResponseBody = new ArraySegment<byte>(_buffer, 0, (int) contentLength);
+            rtspResponseMessage.ResponseBody = new ArraySegment<byte>(_buffer, 0, (int)contentLength);
             return rtspResponseMessage;
         }
 
-        private async Task<int> ReadUntilEndOfHeadersAsync(int readPortionSize = 0)
+        private async Task<int> ReadUntilEndOfHeadersAsync(CancellationToken token, int readPortionSize = 0)
         {
             int offset = 0;
 
@@ -150,7 +148,7 @@ namespace RtspClientSharp.Rtsp
                     throw new RtspBadResponseException(
                         $"Response is too large (> {Constants.MaxResponseHeadersSize / 1024} KB)");
 
-                int read = await ReadAsync(_buffer, offset, count);
+                int read = await ReadAsync(_buffer, offset, count, token);
 
                 if (read == 0)
                     throw new EndOfStreamException("End of rtsp stream");

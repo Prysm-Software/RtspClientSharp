@@ -41,14 +41,14 @@ namespace RtspClientSharp.UnitTests.Rtsp
             {
             }
 
-            protected override Task WriteAsync(byte[] buffer, int offset, int count)
+            protected override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken token)
             {
                 _responseStream = null;
                 _requestStream.Write(buffer, offset, count);
                 return Task.CompletedTask;
             }
 
-            protected override Task<int> ReadAsync(byte[] buffer, int offset, int count)
+            protected override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken token)
             {
                 EnsureResponseCreated();
 
@@ -57,7 +57,7 @@ namespace RtspClientSharp.UnitTests.Rtsp
                 return Task.FromResult(read);
             }
 
-            protected override Task ReadExactAsync(byte[] buffer, int offset, int count)
+            protected override Task ReadExactAsync(byte[] buffer, int offset, int count, CancellationToken token)
             {
                 EnsureResponseCreated();
 

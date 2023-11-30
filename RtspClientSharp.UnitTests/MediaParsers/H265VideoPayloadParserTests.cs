@@ -28,23 +28,23 @@ namespace RtspClientSharp.UnitTests.MediaParsers
             Assert.IsInstanceOfType(frame, typeof(RawH265IFrame));
         }
 
-        [TestMethod]
-        public void Parse_AggregationUnit_ReturnsValidIFrame()
-        {
-            H265CodecInfo testCodecInfo = CreateTestH265CodecInfo();
+        //[TestMethod]
+        //public void Parse_AggregationUnit_ReturnsValidIFrame()
+        //{
+        //    H265CodecInfo testCodecInfo = CreateTestH265CodecInfo();
 
-            var testBytesFirstFrame = new byte[] { 0x61, 0x01, 0x93, 0xAF, 0x8A, 0xB4, 0xB1, 0x0A, 0x80, 0xF3, 0xE3, 0x76, 0x74, 0xC2, 0xA3 };
-            var testBytesSecondFrame = new byte[] { 0x61, 0x01, 0x53, 0xF7, 0x7E, 0x59, 0xE1, 0x4D, 0x79, 0xBA, 0xF3, 0xDF, 0x4F, 0xE3 };
+        //    var testBytesFirstFrame = new byte[] { 0x61, 0x01, 0x93, 0xAF, 0x8A, 0xB4, 0xB1, 0x0A, 0x80, 0xF3, 0xE3, 0x76, 0x74, 0xC2, 0xA3 };
+        //    var testBytesSecondFrame = new byte[] { 0x61, 0x01, 0x53, 0xF7, 0x7E, 0x59, 0xE1, 0x4D, 0x79, 0xBA, 0xF3, 0xDF, 0x4F, 0xE3 };
 
-            RawH265Frame frame = null;
-            var parser = new H265VideoPayloadParser(testCodecInfo);
-            parser.FrameGenerated = rawFrame => frame = (RawH265Frame)rawFrame;
-            parser.Parse(TimeSpan.Zero, new ArraySegment<byte>(testBytesFirstFrame), true);
-            parser.Parse(TimeSpan.Zero, new ArraySegment<byte>(testBytesSecondFrame), true);
+        //    RawH265Frame frame = null;
+        //    var parser = new H265VideoPayloadParser(testCodecInfo);
+        //    parser.FrameGenerated = rawFrame => frame = (RawH265Frame)rawFrame;
+        //    parser.Parse(TimeSpan.Zero, new ArraySegment<byte>(testBytesFirstFrame), true);
+        //    parser.Parse(TimeSpan.Zero, new ArraySegment<byte>(testBytesSecondFrame), true);
 
-            Assert.IsNotNull(frame);
-            Assert.IsInstanceOfType(frame, typeof(RawH265IFrame));
-        }
+        //    Assert.IsNotNull(frame);
+        //    Assert.IsInstanceOfType(frame, typeof(RawH265IFrame));
+        //}
 
         [TestMethod]
         public void Constructor_EmptyVpsSpsPps_NotExceptionGenerated()

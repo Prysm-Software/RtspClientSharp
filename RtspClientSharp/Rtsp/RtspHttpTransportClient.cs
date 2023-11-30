@@ -53,7 +53,7 @@ namespace RtspClientSharp.Rtsp
             await _dataNetworkStream.WriteAsync(requestBytes, 0, requestBytes.Length, token);
 
             var buffer = new byte[Constants.MaxResponseHeadersSize];
-            int read = await ReadUntilEndOfHeadersAsync(_dataNetworkStream, buffer);
+            int read = await ReadUntilEndOfHeadersAsync(_dataNetworkStream, buffer, token);
 
             var ms = new MemoryStream(buffer, 0, read);
             var streamReader = new StreamReader(ms, Encoding.ASCII);
@@ -112,7 +112,7 @@ namespace RtspClientSharp.Rtsp
             _commandsClient?.Close();
         }
 
-        protected override async Task WriteAsync(byte[] buffer, int offset, int count)
+        protected override async Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken token)
         {
             using (_commandsClient = NetworkClientFactory.CreateTcpClient())
             {
@@ -138,16 +138,16 @@ namespace RtspClientSharp.Rtsp
             }
         }
 
-        protected override Task<int> ReadAsync(byte[] buffer, int offset, int count)
+        protected override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken token)
         {
             Debug.Assert(_dataNetworkStream != null, "_dataNetworkStream != null");
-            return _dataNetworkStream.ReadAsync(buffer, offset, count);
+            return _dataNetworkStream.ReadAsync(buffer, offset, count, token);
         }
 
-        protected override Task ReadExactAsync(byte[] buffer, int offset, int count)
+        protected override Task ReadExactAsync(byte[] buffer, int offset, int count, CancellationToken token)
         {
             Debug.Assert(_dataNetworkStream != null, "_dataNetworkStream != null");
-            return _dataNetworkStream.ReadExactAsync(buffer, offset, count);
+            return _dataNetworkStream.ReadExactAsync(buffer, offset, count, token);
         }
 
         private string ComposeGetRequest()
@@ -188,7 +188,7 @@ namespace RtspClientSharp.Rtsp
             return authorizationHeader;
         }
 
-        private static async Task<int> ReadUntilEndOfHeadersAsync(Stream stream, byte[] buffer)
+        private static async Task<int> ReadUntilEndOfHeadersAsync(Stream stream, byte[] buffer, CancellationToken token)
         {
             int offset = 0;
 
@@ -202,7 +202,7 @@ namespace RtspClientSharp.Rtsp
                 if (count == 0)
                     throw new HttpBadResponseException($"Response is too large (> {buffer.Length / 1024} KB)");
 
-                int read = await stream.ReadAsync(buffer, offset, count);
+                int read = await stream.ReadAsync(buffer, offset, count, token);
 
                 if (read == 0)
                     throw new EndOfStreamException("End of http stream");

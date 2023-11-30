@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using RtspClientSharp.Tpkt;
@@ -18,7 +19,7 @@ namespace RtspClientSharp.UnitTests.Tpkt
             var ms = new MemoryStream(streamBytes);
 
             var tpktStream = new TpktStream(ms);
-            TpktPayload payload = await tpktStream.ReadAsync();
+            TpktPayload payload = await tpktStream.ReadAsync(CancellationToken.None);
 
             Assert.AreEqual(1, payload.Channel);
             Assert.AreEqual(1, payload.PayloadSegment.Count);
@@ -32,7 +33,7 @@ namespace RtspClientSharp.UnitTests.Tpkt
             var ms = new MemoryStream();
             var tpktStream = new TpktStream(ms);
 
-            await tpktStream.WriteAsync(1, new ArraySegment<byte>(testPayloadBytes));
+            await tpktStream.WriteAsync(1, new ArraySegment<byte>(testPayloadBytes), CancellationToken.None);
             byte[] writtenBytes = ms.ToArray();
 
             Assert.AreEqual((byte) TpktHeader.Id, writtenBytes[0]);

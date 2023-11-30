@@ -133,8 +133,7 @@ namespace RtspClientSharp.Rtsp
 
             TimeSpan nextRtspKeepAliveInterval = GetNextRtspKeepAliveInterval();
 
-            using (var linkedTokenSource =
-                CancellationTokenSource.CreateLinkedTokenSource(_serverCancellationTokenSource.Token, token))
+            using (var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(_serverCancellationTokenSource.Token, token))
             {
                 CancellationToken linkedToken = linkedTokenSource.Token;
 
@@ -166,7 +165,17 @@ namespace RtspClientSharp.Rtsp
                 }
 
                 if (linkedToken.IsCancellationRequested)
-                    await CloseRtspSessionAsync(CancellationToken.None);
+                {
+                    // If the connexion is canceled by the user, we send a TEARDOWN request.
+                    try
+                    {
+                        await CloseRtspSessionAsync(CancellationToken.None);
+                    }
+                    catch 
+                    {
+                        // We don't care if exception are thrown as the connexion is over
+                    }
+                }
             }
         }
 
@@ -175,9 +184,12 @@ namespace RtspClientSharp.Rtsp
             if (Interlocked.CompareExchange(ref _disposed, 1, 0) != 0)
                 return;
 
-            if (_udpClientsMap.Count != 0)
+            if (_udpClientsMap != null)
                 foreach (Socket client in _udpClientsMap.Values)
+                {
+                    client.Shutdown(SocketShutdown.Both);
                     client.Close();
+                }
 
             IRtspTransportClient rtspTransportClient = Volatile.Read(ref _rtspTransportClient);
 
@@ -549,7 +561,7 @@ namespace RtspClientSharp.Rtsp
 
             while (!token.IsCancellationRequested)
             {
-                TpktPayload payload = await _tpktStream.ReadAsync();
+                TpktPayload payload = await _tpktStream.ReadAsync(token);
 
                 if (_streamsMap.TryGetValue(payload.Channel, out ITransportStream stream))
                     stream.Process(payload.PayloadSegment);
@@ -568,7 +580,7 @@ namespace RtspClientSharp.Rtsp
                     ArraySegment<byte> byteSegment = SerializeRtcpPackets(packets, bufferStream);
                     int rtcpChannel = pair.Key + 1;
 
-                    await _tpktStream.WriteAsync(rtcpChannel, byteSegment);
+                    await _tpktStream.WriteAsync(rtcpChannel, byteSegment, token);
                 }
             }
         }
@@ -589,7 +601,7 @@ namespace RtspClientSharp.Rtsp
                 if (transportStream is RtpStream rtpStream)
                 {
                     RtcpReceiverReportsProvider receiverReportsProvider = _reportProvidersMap[channelNumber];
-                    receiveTask = ReceiveRtpFromUdpAsync(client, rtpStream, receiverReportsProvider, channelNumber, token);
+                    receiveTask = ReceiveRtpFromUdpAsync(client, rtpStream, receiverReportsProvider, token);
                 }
                 else
                     receiveTask = ReceiveRtcpFromUdpAsync(client, transportStream, token);
@@ -604,7 +616,6 @@ namespace RtspClientSharp.Rtsp
             Socket client,
             RtpStream rtpStream,
             RtcpReceiverReportsProvider reportsProvider,
-            int channel,
             CancellationToken token)
         {
             var readBuffer = new byte[Constants.UdpReceiveBufferSize];
@@ -616,37 +627,50 @@ namespace RtspClientSharp.Rtsp
 
             while (!token.IsCancellationRequested)
             {
-                int read = await client.ReceiveAsync(bufferSegment, SocketFlags.None);
+                try
+                {
+                    int read = await client.ReceiveAsync(bufferSegment, SocketFlags.None);
+                    var payloadSegment = new ArraySegment<byte>(readBuffer, 0, read);
+                    rtpStream.Process(payloadSegment);
 
-                var payloadSegment = new ArraySegment<byte>(readBuffer, 0, read);
-                rtpStream.Process(payloadSegment);
+                    int ticksNow = Environment.TickCount;
+                    if (!TimeUtils.IsTimeOver(ticksNow, lastTimeRtcpReportsSent, nextRtcpReportInterval))
+                        continue;
 
-                int ticksNow = Environment.TickCount;
-                if (!TimeUtils.IsTimeOver(ticksNow, lastTimeRtcpReportsSent, nextRtcpReportInterval))
-                    continue;
+                    lastTimeRtcpReportsSent = ticksNow;
+                    nextRtcpReportInterval = GetNextRtcpReportIntervalMs();
 
-                lastTimeRtcpReportsSent = ticksNow;
-                nextRtcpReportInterval = GetNextRtcpReportIntervalMs();
+                    IEnumerable<RtcpPacket> packets = reportsProvider.GetReportPackets();
+                    ArraySegment<byte> byteSegment = SerializeRtcpPackets(packets, bufferStream);
 
-                IEnumerable<RtcpPacket> packets = reportsProvider.GetReportPackets();
-                ArraySegment<byte> byteSegment = SerializeRtcpPackets(packets, bufferStream);
-
-                await client.SendAsync(byteSegment, SocketFlags.None);
+                    await client.SendAsync(byteSegment, SocketFlags.None);
+                }
+                catch (Exception ex)
+                {
+                    if (!token.IsCancellationRequested)
+                        throw ex;
+                }
             }
         }
 
-        private static async Task ReceiveRtcpFromUdpAsync(Socket client, ITransportStream stream,
-            CancellationToken token)
+        private static async Task ReceiveRtcpFromUdpAsync(Socket client, ITransportStream stream, CancellationToken token)
         {
             var readBuffer = new byte[Constants.UdpReceiveBufferSize];
             var bufferSegment = new ArraySegment<byte>(readBuffer);
 
             while (!token.IsCancellationRequested)
             {
-                int read = await client.ReceiveAsync(bufferSegment, SocketFlags.None);
-
-                var payloadSegment = new ArraySegment<byte>(readBuffer, 0, read);
-                stream.Process(payloadSegment);
+                try
+                {
+                    int read = await client.ReceiveAsync(bufferSegment, SocketFlags.None);
+                    var payloadSegment = new ArraySegment<byte>(readBuffer, 0, read);
+                    stream.Process(payloadSegment);
+                }
+                catch (Exception ex)
+                {
+                    if (!token.IsCancellationRequested)
+                        throw ex;
+                }
             }
         }
 

@@ -15,9 +15,10 @@ namespace SimpleRtspClient
 
         static void Main()
         {
+            TaskScheduler.UnobservedTaskException += TaskScheduler_UnobservedTaskException;
             //var serverUri = new Uri("rtsp://hello:world@192.168.50.1/Profile.C0.S0.unicast"); // milestone
-            var serverUri = new Uri("rtsp://onvif:Prysm-123@192.168.50.17:554/live/bf4f8cb1-f4bf-4fda-aeef-9e6fd5ffc03f"); // milestone
-            //var serverUri = new Uri("rtsp://admin:pass@192.168.40.33/stream1"); // mobotix
+            //var serverUri = new Uri("rtsp://onvif:Prysm-123@192.168.50.17:554/live/bf4f8cb1-f4bf-4fda-aeef-9e6fd5ffc03f"); // milestone
+            var serverUri = new Uri("rtsp://admin:pass@192.168.40.33/stream1"); // mobotix
             //var serverUri = new Uri("rtsp://root:pass@192.168.40.31/onvif-media/media.amp?profile=profile_2_h264"); // axis acceuil
             //var serverUri = new Uri("rtsp://192.168.40.22/LiveChannel2/media.smp"); // wisenet
             //var serverUri = new Uri("rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mp4");
@@ -30,7 +31,11 @@ namespace SimpleRtspClient
             };
             var cancellationTokenSource = new CancellationTokenSource();
 
-            Task connectTask = ConnectAsync(connectionParameters, cancellationTokenSource.Token);
+            Task.Run(async () =>
+            {
+                await ConnectAsync(connectionParameters, cancellationTokenSource.Token);
+                Console.WriteLine("Exiting connect task");
+            });
 
             Console.WriteLine("Press pause play or cancel");
 
@@ -53,10 +58,19 @@ namespace SimpleRtspClient
                 }
             } while (key != "cancel");
 
-            cancellationTokenSource.Cancel();
 
             Console.WriteLine("Canceling");
-            connectTask.Wait(CancellationToken.None);
+            cancellationTokenSource.Cancel();
+            //connectTask.Wait(CancellationToken.None);
+
+            Console.WriteLine("Press any key to quit...");
+            Console.ReadLine();
+        }
+
+        private static void TaskScheduler_UnobservedTaskException(object sender, UnobservedTaskExceptionEventArgs e)
+        {
+            Console.WriteLine("TaskScheduler_UnobservedTaskException");
+            Console.WriteLine(e.ToString());
         }
 
         private static async Task ConnectAsync(ConnectionParameters connectionParameters, CancellationToken token)
@@ -70,43 +84,40 @@ namespace SimpleRtspClient
                     //rtspClient.NaluReceived += (s, data) => Console.WriteLine($"nalu {data.Length}");
                     _rtspClient.FrameReceived += _rtspClient_FrameReceived;
 
-                    //while (true)
+                    Console.WriteLine("Connecting...");
+
+                    try
                     {
-                        Console.WriteLine("Connecting...");
+                        await _rtspClient.ConnectAsync(new RtspRequestParams { Token = token });
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        return;
+                    }
+                    catch (RtspClientException e)
+                    {
+                        Console.WriteLine(e.ToString());
+                        return;
+                        //await Task.Delay(delay, token);
+                        //continue;
+                    }
 
-                        try
-                        {
-                            await _rtspClient.ConnectAsync(new RtspRequestParams { Token = token });
-                        }
-                        catch (OperationCanceledException)
-                        {
-                            return;
-                        }
-                        catch (RtspClientException e)
-                        {
-                            Console.WriteLine(e.ToString());
-                            return;
-                            //await Task.Delay(delay, token);
-                            //continue;
-                        }
+                    Console.WriteLine("Connected.");
+                    Console.WriteLine("Got SDP :");
+                    Console.WriteLine(_rtspClient.ClientDescription.SdpDocument);
 
-                        Console.WriteLine("Connected.");
-                        Console.WriteLine("Got SDP :");
-                        Console.WriteLine(_rtspClient.ClientDescription.SdpDocument);
-
-                        try
-                        {
-                            await _rtspClient.ReceiveAsync(token);
-                        }
-                        catch (OperationCanceledException)
-                        {
-                            return;
-                        }
-                        catch (RtspClientException e)
-                        {
-                            Console.WriteLine(e.ToString());
-                            //await Task.Delay(delay, token);
-                        }
+                    try
+                    {
+                        await _rtspClient.ReceiveAsync(token);
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        return;
+                    }
+                    catch (RtspClientException e)
+                    {
+                        Console.WriteLine(e.ToString());
+                        //await Task.Delay(delay, token);
                     }
                 }
             }

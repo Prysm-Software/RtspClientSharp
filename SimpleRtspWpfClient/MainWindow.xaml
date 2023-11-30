@@ -1,0 +1,38 @@
+﻿<Window x:Class="SimpleRtspWpfClient.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:p="clr-namespace:SimpleRtspWpfClient.Properties"
+        mc:Ignorable="d"
+        Title="Wpf rtsp reader test" Height="450" Width="800">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="30"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="auto"/>
+                <ColumnDefinition Width="auto"/>
+                <ColumnDefinition Width="auto"/>
+            </Grid.ColumnDefinitions>
+
+            <ComboBox x:Name="ComboBoxUrl" IsEditable="True" Text="{Binding url, Source={x:Static p:Settings.Default}}">
+                <ComboBoxItem Content="rtsp://admin:pass@192.168.40.33/stream1"/>
+                <ComboBoxItem Content="rtsp://onvif:Prysm-123@192.168.50.17:554/live/bf4f8cb1-f4bf-4fda-aeef-9e6fd5ffc03f"/>
+                <ComboBoxItem Content="rtsp://admin:prysm-123@192.168.40.111/0/onvif/profile1/media.smp"/>
+                <ComboBoxItem Content="rtsp://admin:Prysm123@192.168.40.34/Streaming/Channels/101?transportmode=unicast&amp;profile=Profile_1"/>
+            </ComboBox>
+            <Button Grid.Column="1" Click="ButtonPlayClick">PLAY</Button>
+            <Button Grid.Column="2" Click="ButtonLoopClick">LOOP</Button>
+            <Button Grid.Column="3" Click="ButtonStopClick">STOP</Button>
+        </Grid>
+
+        <StackPanel Grid.Row="1">
+            <TextBlock Text="{Binding FrameReceived, StringFormat='Frame received {0}'}"/>
+        </StackPanel>
+    </Grid>
+</Window>

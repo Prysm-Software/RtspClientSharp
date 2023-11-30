@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Threading.Tasks;
 using RtspClientSharp.Rtp;
 using RtspClientSharp.Utils;
@@ -26,9 +27,9 @@ namespace RtspClientSharp.Tpkt
             _stream = stream ?? throw new ArgumentNullException(nameof(stream));
         }
 
-        public async Task<TpktPayload> ReadAsync()
+        public async Task<TpktPayload> ReadAsync(CancellationToken token)
         {
-            int nextTpktPositon = await FindNextPacketAsync();
+            int nextTpktPositon = await FindNextPacketAsync(token);
             int usefulDataSize = _nonParsedDataSize - nextTpktPositon;
 
             if (nextTpktPositon != 0)
@@ -40,7 +41,7 @@ namespace RtspClientSharp.Tpkt
 
             if (readCount > 0)
             {
-                await _stream.ReadExactAsync(_readBuffer, usefulDataSize, readCount);
+                await _stream.ReadExactAsync(_readBuffer, usefulDataSize, readCount, token);
                 usefulDataSize = 0;
             }
             else
@@ -60,7 +61,7 @@ namespace RtspClientSharp.Tpkt
 
             if (readCount > 0)
             {
-                await _stream.ReadExactAsync(_readBuffer, TpktHeader.Size + usefulDataSize, readCount);
+                await _stream.ReadExactAsync(_readBuffer, TpktHeader.Size + usefulDataSize, readCount, token);
                 _nonParsedDataSize = 0;
             }
             else
@@ -73,7 +74,7 @@ namespace RtspClientSharp.Tpkt
             return new TpktPayload(channel, payloadSegment);
         }
 
-        public async Task WriteAsync(int channel, ArraySegment<byte> payloadSegment)
+        public async Task WriteAsync(int channel, ArraySegment<byte> payloadSegment, CancellationToken token)
         {
             Debug.Assert(payloadSegment.Array != null, "payloadSegment.Array != null");
 
@@ -89,13 +90,12 @@ namespace RtspClientSharp.Tpkt
             _writeBuffer[2] = (byte)(payloadSegment.Count >> 8);
             _writeBuffer[3] = (byte)payloadSegment.Count;
 
-            Buffer.BlockCopy(payloadSegment.Array, payloadSegment.Offset, _writeBuffer, TpktHeader.Size,
-                payloadSegment.Count);
+            Buffer.BlockCopy(payloadSegment.Array, payloadSegment.Offset, _writeBuffer, TpktHeader.Size, payloadSegment.Count);
 
-            await _stream.WriteAsync(_writeBuffer, 0, packetSize);
+            await _stream.WriteAsync(_writeBuffer, 0, packetSize, token);
         }
 
-        private async Task<int> FindNextPacketAsync()
+        private async Task<int> FindNextPacketAsync(CancellationToken token)
         {
             if (_nonParsedDataSize != 0)
                 Buffer.BlockCopy(_readBuffer, _nonParsedDataOffset, _readBuffer, 0, _nonParsedDataSize);
@@ -103,7 +103,7 @@ namespace RtspClientSharp.Tpkt
             int packetPosition;
             while ((packetPosition = FindTpktSignature(_nonParsedDataSize)) == -1)
             {
-                _nonParsedDataSize = await _stream.ReadAsync(_readBuffer, 0, _readBuffer.Length);
+                _nonParsedDataSize = await _stream.ReadAsync(_readBuffer, 0, _readBuffer.Length, token);
 
                 if (_nonParsedDataSize == 0)
                     throw new EndOfStreamException("End of TPKT stream");

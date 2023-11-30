@@ -30,7 +30,7 @@ namespace RtspClientSharp.UnitTests.Utils
             var readBuffer = new byte[inputBuffer.Length];
             var stream = new FakeStream(inputBuffer);
 
-            await stream.ReadExactAsync(readBuffer, 0, inputBuffer.Length);
+            await stream.ReadExactAsync(readBuffer, 0, inputBuffer.Length, CancellationToken.None);
 
             Assert.IsTrue(inputBuffer.SequenceEqual(readBuffer));
         }
