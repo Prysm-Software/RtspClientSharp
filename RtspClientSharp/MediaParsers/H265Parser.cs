@@ -21,7 +21,7 @@ namespace RtspClientSharp.MediaParsers
         private readonly Dictionary<int, byte[]> _ppsMap = new Dictionary<int, byte[]>();
         private readonly Dictionary<int, byte[]> _seiMap = new Dictionary<int, byte[]>();
         private byte[] _parametersBytes = new byte[0];
-        private bool _waitForIFrame = true;
+        private bool _waitForIFrame = false;
         private bool _updatedParametersBytes;
         private int _sliceType = -1;
 

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Threading;
@@ -16,9 +17,9 @@ namespace SimpleRtspClient
         static void Main()
         {
             TaskScheduler.UnobservedTaskException += TaskScheduler_UnobservedTaskException;
-            //var serverUri = new Uri("rtsp://hello:world@192.168.50.1/Profile.C0.S0.unicast"); // milestone
-            //var serverUri = new Uri("rtsp://onvif:Prysm-123@192.168.50.17:554/live/bf4f8cb1-f4bf-4fda-aeef-9e6fd5ffc03f"); // milestone
-            var serverUri = new Uri("rtsp://admin:pass@192.168.40.33/stream1"); // mobotix
+
+            var serverUri = new Uri("rtsp://onvif:Prysm-123@192.168.50.17:554/live/bf4f8cb1-f4bf-4fda-aeef-9e6fd5ffc03f"); // milestone
+            //var serverUri = new Uri("rtsp://admin:pass@192.168.40.33/stream1"); // mobotix
             //var serverUri = new Uri("rtsp://root:pass@192.168.40.31/onvif-media/media.amp?profile=profile_2_h264"); // axis acceuil
             //var serverUri = new Uri("rtsp://192.168.40.22/LiveChannel2/media.smp"); // wisenet
             //var serverUri = new Uri("rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mp4");
@@ -81,7 +82,10 @@ namespace SimpleRtspClient
 
                 using (_rtspClient = new RtspClient(connectionParameters))
                 {
-                    //rtspClient.NaluReceived += (s, data) => Console.WriteLine($"nalu {data.Length}");
+                    _rtspClient.NaluReceived += (s, data) =>
+                    {
+                        //Debug.WriteLine($"nalu {BitConverter.ToString(data, 0, data.Length > 20 ? 20 : data.Length)}");
+                    };
                     _rtspClient.FrameReceived += _rtspClient_FrameReceived;
 
                     Console.WriteLine("Connecting...");

@@ -259,6 +259,7 @@ namespace RtspClientSharp
                 },
                 NaluReceived = buf =>
                 {
+                    Volatile.Write(ref _anyFrameReceived, true);
                     NaluReceived?.Invoke(this, buf);
                 }
             };
