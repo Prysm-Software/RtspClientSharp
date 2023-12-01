@@ -24,7 +24,7 @@ namespace RtspClientSharp.MediaParsers
         private readonly BitStreamReader _bitStreamReader = new BitStreamReader();
         private readonly Dictionary<int, byte[]> _spsMap = new Dictionary<int, byte[]>();
         private readonly Dictionary<int, byte[]> _ppsMap = new Dictionary<int, byte[]>();
-        private bool _waitForIFrame = false;
+        private bool _waitForIFrame = true;
         private byte[] _spsPpsBytes = new byte[0];
         private bool _updateSpsPpsBytes;
         private int _sliceType = -1;
