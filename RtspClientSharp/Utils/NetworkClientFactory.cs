@@ -5,7 +5,7 @@ namespace RtspClientSharp.Utils
     static class NetworkClientFactory
     {
         private const int TcpReceiveBufferDefaultSize = 64 * 1024;
-        private const int UdpReceiveBufferDefaultSize = 128 * 1024;
+        private const int UdpReceiveBufferDefaultSize = 1024 * 1024; // 1Mo instead of 128ko. Some packets were missed with 128ko.
         private const int SIO_UDP_CONNRESET = -1744830452;
         private static readonly byte[] EmptyOptionInValue = { 0, 0, 0, 0 };
 

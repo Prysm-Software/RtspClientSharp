@@ -53,7 +53,6 @@ namespace RtspClientSharp.Rtp
 
         private void ProcessImmediately(ref RtpPacket rtpPacket)
         {
-            //Debug.WriteLine($"[RTPStream] ProcessImmediately {rtpPacket.SeqNumber}");
             SyncSourceId = rtpPacket.SyncSourceId;
 
             if (!_isFirstPacket)
@@ -62,9 +61,6 @@ namespace RtspClientSharp.Rtp
 
                 if (delta != 1)
                 {
-                    // Sometimes, with the mobotix though ML onvif bridge, we miss some RTP Packet and step inside this before getting the first IFrame
-                    // I don't know why
-
                     int lostCount = delta - 1;
 
                     if (lostCount == -1)
