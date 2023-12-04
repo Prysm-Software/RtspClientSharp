@@ -82,11 +82,8 @@ namespace SimpleRtspClient
 
                 using (_rtspClient = new RtspClient(connectionParameters))
                 {
-                    _rtspClient.NaluReceived += (s, data) =>
-                    {
-                        //Debug.WriteLine($"nalu {BitConverter.ToString(data, 0, data.Length > 20 ? 20 : data.Length)}");
-                    };
-                    _rtspClient.FrameReceived += _rtspClient_FrameReceived;
+                    //_rtspClient.NaluReceived += NaluReceived;
+                    _rtspClient.FrameReceived += FrameReceived;
 
                     Console.WriteLine("Connecting...");
 
@@ -109,6 +106,7 @@ namespace SimpleRtspClient
                     Console.WriteLine("Connected.");
                     Console.WriteLine("Got SDP :");
                     Console.WriteLine(_rtspClient.ClientDescription.SdpDocument);
+                    Console.WriteLine("Receiving packet...");
 
                     try
                     {
@@ -130,9 +128,14 @@ namespace SimpleRtspClient
             }
         }
 
-        private static void _rtspClient_FrameReceived(object sender, RtspClientSharp.RawFrames.RawFrame e)
+        private static void NaluReceived(object sender, byte[] data)
         {
-            System.Diagnostics.Debug.WriteLine("GOT FRAME " + e.FrameSegment.Count);
+            Debug.WriteLine($"NALu {BitConverter.ToString(data, 0, data.Length > 20 ? 20 : data.Length)}");
+        }
+
+        private static void FrameReceived(object sender, RtspClientSharp.RawFrames.RawFrame e)
+        {
+            Debug.WriteLine("FRAME " + e.GetType().ToString().Split('.').LastOrDefault());
         }
     }
 }

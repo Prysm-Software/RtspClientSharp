@@ -44,9 +44,11 @@ namespace RtspClientSharp.MediaParsers
         {
             Debug.Assert(byteSegment.Array != null, "byteSegment.Array != null");
 
-            if (ArrayUtils.StartsWith(byteSegment.Array, byteSegment.Offset, byteSegment.Count,
-                RawH264Frame.StartMarker))
+            if (ArrayUtils.StartsWith(byteSegment.Array, byteSegment.Offset, byteSegment.Count, RawH264Frame.StartMarker))
+            {
+                //Debug.WriteLine($"[H264Parser] Start {BitConverter.ToString(byteSegment.Array, 0, byteSegment.Array.Length > 20 ? 20 : byteSegment.Array.Length)}");
                 H264Slicer.Slice(byteSegment, SlicerOnNalUnitFound);
+            }
             else
                 ProcessNalUnit(byteSegment, false, ref generateFrame);
 
@@ -81,6 +83,7 @@ namespace RtspClientSharp.MediaParsers
 
             if (frameType == FrameType.PredictionFrame && !_waitForIFrame)
             {
+                //Debug.WriteLine("P Frame");
                 frameTimestamp = _frameTimestampProvider();
                 FrameGenerated?.Invoke(new RawH264PFrame(frameTimestamp, frameBytes));
                 return;
@@ -93,6 +96,8 @@ namespace RtspClientSharp.MediaParsers
             var byteSegment = new ArraySegment<byte>(_spsPpsBytes);
 
             frameTimestamp = _frameTimestampProvider();
+
+            //Debug.WriteLine("I Frame");
             FrameGenerated?.Invoke(new RawH264IFrame(frameTimestamp, frameBytes, byteSegment));
         }
 

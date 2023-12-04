@@ -1,5 +1,6 @@
 ﻿using RtspClientSharp.MediaParsers;
 using System;
+using System.Diagnostics;
 using System.Linq;
 
 namespace RtspClientSharp.Rtp
@@ -42,6 +43,8 @@ namespace RtspClientSharp.Rtp
             if (!RtpPacket.TryParse(payloadSegment, out RtpPacket rtpPacket))
                 return;
 
+            //Debug.WriteLine($"[RTPStream] Process {rtpPacket.SeqNumber}");
+
             if (_rtpSequenceAssembler != null)
                 _rtpSequenceAssembler.ProcessPacket(ref rtpPacket);
             else
@@ -50,6 +53,7 @@ namespace RtspClientSharp.Rtp
 
         private void ProcessImmediately(ref RtpPacket rtpPacket)
         {
+            //Debug.WriteLine($"[RTPStream] ProcessImmediately {rtpPacket.SeqNumber}");
             SyncSourceId = rtpPacket.SyncSourceId;
 
             if (!_isFirstPacket)
@@ -58,6 +62,9 @@ namespace RtspClientSharp.Rtp
 
                 if (delta != 1)
                 {
+                    // Sometimes, with the mobotix though ML onvif bridge, we miss some RTP Packet and step inside this before getting the first IFrame
+                    // I don't know why
+
                     int lostCount = delta - 1;
 
                     if (lostCount == -1)
@@ -70,6 +77,7 @@ namespace RtspClientSharp.Rtp
 
                     PacketsLostSinceLastReset += lostCount;
 
+                    //Debug.WriteLine($"[RTPStream] Reset payload parser state");
                     _mediaPayloadParser.ResetState();
                 }
 
