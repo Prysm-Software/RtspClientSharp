@@ -3,31 +3,32 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Authors>Kirill Bogdanov</Authors>
-    <RepositoryUrl>https://github.com/BogdanovKirill/RtspClientSharp</RepositoryUrl>
+    <Authors>Kirill Bogdanov, Prysm</Authors>
+    <RepositoryUrl>https://github.com/Prysm-Software/RtspClientSharp</RepositoryUrl>
     <PackageTags>rtsp, rtp, rtcp</PackageTags>
-    <Description>C# RTSP Client for .NET
+    <Description> C# RTSP Client for .NET
 
-- Supported transport protocols: TCP/HTTP/UDP
-- Supported media codecs: H.264/MJPEG/AAC/G711A/G711U/PCM/G726
-- No external dependencies, pure C# code
-- Asynchronous nature with cancellation tokens support
-- Designed to be fast and scaleable
-- Low GC pressure during receive stage (when RTSP session is established); low amount of freezes under high load</Description>
+ - Supported transport protocols: TCP/HTTP/UDP
+ - Supported media codecs: H.264/H.265/MJPEG/AAC/G711A/G711U/PCM/G726/OnvifMetadata
+ - No external dependencies, pure C# code
+ - Asynchronous nature with cancellation tokens support
+ - Designed to be fast and scaleable
+ - Low GC pressure during receive stage (when RTSP session is established); low amount of freezes under high load    </Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageIconUrl>https://github.com/BogdanovKirill/RtspClientSharp/blob/master/Images/package_icon.png?raw=true</PackageIconUrl>
-    <Copyright>Copyright ©2019 Kirill Bogdanov</Copyright>
+    <Copyright>Copyright ©2023 Kirill Bogdanov, Prysm</Copyright>
     <Version>2.0.0.0</Version>
-    <PackageReleaseNotes>-Bug fix: Additional check for NAL start marker was added. That should resolve issue with some cameras which sends one NAL for one frame without start bytes (0 0 0 1)
-
-More info: https://github.com/BogdanovKirill/RtspClientSharp/issues/49</PackageReleaseNotes>
+    <PackageReleaseNotes>Fix: UnobservedTaskException when closing udpsockets
+Fix: Increase UDP receive buffer size (missing packets with some streams)
+Add: Event NaluReceived</PackageReleaseNotes>
     <RepositoryType>git</RepositoryType>
     <Platforms>AnyCPU;x64;x86</Platforms>
     <Configurations>Debug;Release;Publish</Configurations>
     <AssemblyOriginatorKeyFile>signkey.pfx</AssemblyOriginatorKeyFile>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <AssemblyVersion>2.0.0.0</AssemblyVersion>
-    <FileVersion>2.0.0.0</FileVersion>
+    <FileVersion></FileVersion>
+    <PackageProjectUrl>https://github.com/Prysm-Software/RtspClientSharp</PackageProjectUrl>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
