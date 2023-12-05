@@ -13,5 +13,15 @@ namespace RtspClientSharp.Utils
 
             return false;
         }
+
+        public static DateTime GetDateFromNtpTimestamp(ulong ntp)
+        {
+            uint seconds = (uint)((ntp >> 32) & 0xFFFFFFFF);
+            uint fraction = (uint)(ntp & 0xFFFFFFFF);
+            int milliseconds = (int)(fraction / double.MaxValue * 1000);
+            DateTime baseDate = new DateTime(1900, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
+            return baseDate.AddSeconds(seconds).AddMilliseconds(milliseconds);
+
+        }
     }
 }

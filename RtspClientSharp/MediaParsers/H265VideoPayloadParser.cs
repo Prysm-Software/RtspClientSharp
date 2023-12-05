@@ -101,7 +101,7 @@ namespace RtspClientSharp.MediaParsers
 
         private void ParseAP(ArraySegment<byte> byteSegment, bool markerBit)
         {
-            Debug.WriteLine("Aggregation packet");
+            //Debug.WriteLine("Aggregation packet");
             Debug.Assert(byteSegment.Array != null, "byteSegment.Array != null");
 
             /* pass the HEVC payload header */
@@ -153,7 +153,7 @@ namespace RtspClientSharp.MediaParsers
 
         private void ParseFP(ArraySegment<byte> byteSegment, bool markerBit)
         {
-            Debug.WriteLine("Fragmentation Unit");
+            //Debug.WriteLine("Fragmentation Unit");
             Debug.Assert(byteSegment.Array != null, "byteSegment.Array != null");
 
             /*

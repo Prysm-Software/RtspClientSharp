@@ -171,7 +171,7 @@ namespace RtspClientSharp.Rtsp
                     {
                         await CloseRtspSessionAsync(CancellationToken.None);
                     }
-                    catch 
+                    catch
                     {
                         // We don't care if exception are thrown as the connexion is over
                     }
@@ -274,8 +274,7 @@ namespace RtspClientSharp.Rtsp
 
                     int rtcpPort = ((IPEndPoint)rtcpClient.LocalEndPoint).Port;
 
-                    setupRequest = _requestMessageFactory.CreateSetupUdpUnicastRequest(track.TrackName,
-                        rtpPort, rtcpPort);
+                    setupRequest = _requestMessageFactory.CreateSetupUdpUnicastRequest(track.TrackName, rtpPort, rtcpPort);
                     setupResponse = await _rtspTransportClient.EnsureExecuteRequest(setupRequest, token);
                 }
                 catch
@@ -291,8 +290,7 @@ namespace RtspClientSharp.Rtsp
                 rtpChannelNumber = channelCounter;
                 rtcpChannelNumber = ++channelCounter;
 
-                setupRequest = _requestMessageFactory.CreateSetupTcpInterleavedRequest(track.TrackName,
-                    rtpChannelNumber, rtcpChannelNumber);
+                setupRequest = _requestMessageFactory.CreateSetupTcpInterleavedRequest(track.TrackName, rtpChannelNumber, rtcpChannelNumber);
                 setupResponse = await _rtspTransportClient.EnsureExecuteRequest(setupRequest, token);
             }
 
