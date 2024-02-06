@@ -42,7 +42,7 @@ namespace RtspClientSharp.Rtsp
 
             int httpPort = connectionUri.Port != -1 ? connectionUri.Port : Constants.DefaultHttpPort;
 
-            await _streamDataClient.ConnectAsync(connectionUri.Host, httpPort);
+            _streamDataClient.Connect(connectionUri.Host, httpPort);
 
             _remoteEndPoint = _streamDataClient.RemoteEndPoint;
             _dataNetworkStream = new NetworkStream(_streamDataClient, false);
@@ -55,44 +55,47 @@ namespace RtspClientSharp.Rtsp
             var buffer = new byte[Constants.MaxResponseHeadersSize];
             int read = await ReadUntilEndOfHeadersAsync(_dataNetworkStream, buffer, token);
 
-            var ms = new MemoryStream(buffer, 0, read);
-            var streamReader = new StreamReader(ms, Encoding.ASCII);
-
-            string responseLine = streamReader.ReadLine();
-
-            if (responseLine == null)
-                throw new HttpBadResponseException("Empty response");
-
-            string[] tokens = responseLine.Split(' ');
-
-            if (tokens.Length != 3)
-                throw new HttpRequestException("Invalid first response line");
-
-            HttpStatusCode statusCode = (HttpStatusCode) int.Parse(tokens[1]);
-
-            if (statusCode == HttpStatusCode.OK)
-                return;
-
-            if (statusCode == HttpStatusCode.Unauthorized &&
-                !ConnectionParameters.Credentials.IsEmpty() &&
-                _authenticator == null)
+            using (var ms = new MemoryStream(buffer, 0, read))
             {
-                NameValueCollection headers = HeadersParser.ParseHeaders(streamReader);
+                using (var streamReader = new StreamReader(ms, Encoding.ASCII))
+                {
+                    string responseLine = streamReader.ReadLine();
 
-                string authenticateHeader = headers.Get(WellKnownHeaders.WwwAuthenticate);
+                    if (responseLine == null)
+                        throw new HttpBadResponseException("Empty response");
 
-                if (string.IsNullOrEmpty(authenticateHeader))
+                    string[] tokens = responseLine.Split(' ');
+
+                    if (tokens.Length != 3)
+                        throw new HttpRequestException("Invalid first response line");
+
+                    HttpStatusCode statusCode = (HttpStatusCode)int.Parse(tokens[1]);
+
+                    if (statusCode == HttpStatusCode.OK)
+                        return;
+
+                    if (statusCode == HttpStatusCode.Unauthorized &&
+                        !ConnectionParameters.Credentials.IsEmpty() &&
+                        _authenticator == null)
+                    {
+                        NameValueCollection headers = HeadersParser.ParseHeaders(streamReader);
+
+                        string authenticateHeader = headers.Get(WellKnownHeaders.WwwAuthenticate);
+
+                        if (string.IsNullOrEmpty(authenticateHeader))
+                            throw new HttpBadResponseCodeException(statusCode);
+
+                        _authenticator = Authenticator.Create(ConnectionParameters.Credentials, authenticateHeader);
+
+                        _streamDataClient.Dispose();
+
+                        await ConnectAsync(token);
+                        return;
+                    }
+
                     throw new HttpBadResponseCodeException(statusCode);
-
-                _authenticator = Authenticator.Create(ConnectionParameters.Credentials, authenticateHeader);
-
-                _streamDataClient.Dispose();
-
-                await ConnectAsync(token);
-                return;
+                }
             }
-
-            throw new HttpBadResponseCodeException(statusCode);
         }
 
         public override Stream GetStream()

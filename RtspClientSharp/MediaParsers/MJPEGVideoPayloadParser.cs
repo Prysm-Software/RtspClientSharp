@@ -422,5 +422,11 @@ namespace RtspClientSharp.MediaParsers
             var frame = new RawJpegFrame(timestamp, frameBytes);
             OnFrameGenerated(frame);
         }
+
+        public override void Dispose()
+        {
+            _frameStream?.Dispose();
+            _frameStream?.Close();
+        }
     }
 }

@@ -23,7 +23,7 @@ namespace RtspClientSharp.Rtsp
         {
         }
 
-        public override async Task ConnectAsync(CancellationToken token)
+        public override Task ConnectAsync(CancellationToken token)
         {
             _tcpClient = NetworkClientFactory.CreateTcpClient();
 
@@ -31,10 +31,11 @@ namespace RtspClientSharp.Rtsp
 
             int rtspPort = connectionUri.Port != -1 ? connectionUri.Port : Constants.DefaultRtspPort;
 
-            await _tcpClient.ConnectAsync(connectionUri.Host, rtspPort);
+            _tcpClient.Connect(connectionUri.Host, rtspPort);
 
             _remoteEndPoint = _tcpClient.RemoteEndPoint;
             _networkStream = new NetworkStream(_tcpClient, false);
+            return Task.CompletedTask;
         }
 
         public override Stream GetStream()
@@ -51,6 +52,9 @@ namespace RtspClientSharp.Rtsp
                 return;
 
             _tcpClient?.Close();
+            _tcpClient?.Dispose();
+
+            _networkStream?.Dispose();
         }
 
         protected override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken token)

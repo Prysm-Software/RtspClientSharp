@@ -16,8 +16,8 @@
  - Low GC pressure during receive stage (when RTSP session is established); low amount of freezes under high load    </Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageIconUrl>https://github.com/BogdanovKirill/RtspClientSharp/blob/master/Images/package_icon.png?raw=true</PackageIconUrl>
-    <Copyright>Copyright ©2023 Kirill Bogdanov, Prysm</Copyright>
-    <Version>2.0.1.0</Version>
+    <Copyright>Copyright ©2024 Kirill Bogdanov, Prysm</Copyright>
+    <Version>2.0.2.0</Version>
     <PackageReleaseNotes>Fix: UnobservedTaskException when closing udpsockets
 Fix: Increase UDP receive buffer size (missing packets with some streams)
 Add: Event NaluReceived</PackageReleaseNotes>
@@ -26,7 +26,7 @@ Add: Event NaluReceived</PackageReleaseNotes>
     <Configurations>Debug;Release;Publish</Configurations>
     <AssemblyOriginatorKeyFile>signkey.pfx</AssemblyOriginatorKeyFile>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <AssemblyVersion>2.0.0.0</AssemblyVersion>
+    <AssemblyVersion>2.0.2.0</AssemblyVersion>
     <FileVersion></FileVersion>
     <PackageProjectUrl>https://github.com/Prysm-Software/RtspClientSharp</PackageProjectUrl>
   </PropertyGroup>

@@ -60,5 +60,9 @@ namespace RtspClientSharp.MediaParsers
                         $"Unsupported codec: {codecInfo.GetType().Name}");
             }
         }
+
+        public virtual void Dispose()
+        {
+        }
     }
 }

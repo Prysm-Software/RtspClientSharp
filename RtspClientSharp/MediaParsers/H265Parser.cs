@@ -10,7 +10,7 @@ using System.Linq;
 
 namespace RtspClientSharp.MediaParsers
 {
-    public class H265Parser
+    public class H265Parser : IDisposable
     {
         public static readonly ArraySegment<byte> StartMarkSegment = new ArraySegment<byte>(RawH265Frame.StartMarker);
 
@@ -140,7 +140,7 @@ namespace RtspClientSharp.MediaParsers
 
             //Required to be equal to zero
             if (layerId != 0)
-                throw new H265ParserException($"Invalid LayerId { layerId }.");
+                throw new H265ParserException($"Invalid LayerId {layerId}.");
 
             //The value of TemporalId is equal to TID minus 1. A TID value of 0 is illegal...
             //if (temporalId == 0)
@@ -148,7 +148,7 @@ namespace RtspClientSharp.MediaParsers
 
             //Checking Nal unit type
             if (!RtpH265TypeUtils.CheckIfIsValid(nalUnitType))
-                throw new H265ParserException($"Invalid (HEVC) NAL Unit Type { nalUnitType }.");
+                throw new H265ParserException($"Invalid (HEVC) NAL Unit Type {nalUnitType}.");
 
             if (hasStartMarker)
                 NaluReceived?.Invoke(byteSegment.ToArray());
@@ -293,6 +293,12 @@ namespace RtspClientSharp.MediaParsers
                 return HevcFrameType.PredictionFrame;
 
             return HevcFrameType.Unknown;
+        }
+
+        public void Dispose()
+        {
+            _frameStream?.Close();
+            _frameStream?.Dispose();
         }
     }
 }

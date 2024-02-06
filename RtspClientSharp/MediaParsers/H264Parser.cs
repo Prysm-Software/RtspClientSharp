@@ -9,7 +9,7 @@ using RtspClientSharp.Utils;
 
 namespace RtspClientSharp.MediaParsers
 {
-    class H264Parser
+    class H264Parser : IDisposable
     {
         private enum FrameType
         {
@@ -299,6 +299,12 @@ namespace RtspClientSharp.MediaParsers
                 return FrameType.IntraFrame;
 
             return FrameType.Unknown;
+        }
+
+        public void Dispose()
+        {
+            _frameStream?.Close();
+            _frameStream?.Dispose();
         }
     }
 }

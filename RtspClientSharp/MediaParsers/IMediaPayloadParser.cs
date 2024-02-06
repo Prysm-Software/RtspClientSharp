@@ -3,7 +3,7 @@ using RtspClientSharp.RawFrames;
 
 namespace RtspClientSharp.MediaParsers
 {
-    interface IMediaPayloadParser
+    interface IMediaPayloadParser : IDisposable
     {
         DateTime BaseTime { get; set; }
 

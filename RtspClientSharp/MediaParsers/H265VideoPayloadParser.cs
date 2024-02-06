@@ -226,5 +226,11 @@ namespace RtspClientSharp.MediaParsers
                 _waitForStartFu = true;
             }
         }
+
+        public override void Dispose()
+        {
+            _h265Parser?.Dispose();
+            _nalStream?.Dispose();
+        }
     }
 }

@@ -44,25 +44,28 @@ namespace RtspClientSharp.Sdp
             _payloadFormatNumberToInfoMap.Clear();
             _lastParsedFormatInfo = null;
 
-            var sdpStream = new MemoryStream(payloadSegment.Array, payloadSegment.Offset, payloadSegment.Count);
-            var sdpStreamReader = new StreamReader(sdpStream);
-
-            Sdp = sdpStreamReader.ReadToEnd();
-            sdpStreamReader.BaseStream.Position = 0;
-
-            string line;
-            while (!string.IsNullOrEmpty(line = sdpStreamReader.ReadLine()))
+            using (var sdpStream = new MemoryStream(payloadSegment.Array, payloadSegment.Offset, payloadSegment.Count))
             {
+                using (var sdpStreamReader = new StreamReader(sdpStream))
+                {
+                    Sdp = sdpStreamReader.ReadToEnd();
+                    sdpStreamReader.BaseStream.Position = 0;
 
-                if (line[0] == 'm')
-                    ParseMediaLine(line);
-                else if (line[0] == 'a')
-                    ParseAttributesLine(line);
+                    string line;
+                    while (!string.IsNullOrEmpty(line = sdpStreamReader.ReadLine()))
+                    {
+
+                        if (line[0] == 'm')
+                            ParseMediaLine(line);
+                        else if (line[0] == 'a')
+                            ParseAttributesLine(line);
+                    }
+
+                    return _payloadFormatNumberToInfoMap.Values
+                        .Where(fi => fi.TrackName != null && fi.CodecInfo != null)
+                        .Select(fi => new RtspMediaTrackInfo(fi.TrackName, fi.CodecInfo, fi.SamplesFrequency));
+                }
             }
-
-            return _payloadFormatNumberToInfoMap.Values
-                .Where(fi => fi.TrackName != null && fi.CodecInfo != null)
-                .Select(fi => new RtspMediaTrackInfo(fi.TrackName, fi.CodecInfo, fi.SamplesFrequency));
         }
 
         private void ParseMediaLine(string line)
@@ -311,7 +314,7 @@ namespace RtspClientSharp.Sdp
             {
                 int donlField;
                 bool spropMaxDonDiffValue = int.TryParse(GetFormatParameterValue(spropMaxDonDiffSet), out donlField);
-                
+
                 if (spropMaxDonDiffValue)
                     if (donlField > 0)
                         h265CodecInfo.HasDonlField = true;
@@ -320,7 +323,7 @@ namespace RtspClientSharp.Sdp
             /* sprop-depack-buf-nalus: 0-32767 */
             string spropDepackBufNalusSet = formatAttributes.FirstOrDefault(fa =>
               fa.StartsWith("sprop-depack-buf-nalus", StringComparison.InvariantCultureIgnoreCase));
-            
+
             if (spropDepackBufNalusSet != null)
             {
                 int depackBufNalus;

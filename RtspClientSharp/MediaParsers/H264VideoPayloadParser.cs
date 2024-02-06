@@ -190,5 +190,11 @@ namespace RtspClientSharp.MediaParsers
                 _h264Parser.Parse(nalUnitSegment, markerBit && startOffset >= endOffset);
             }
         }
+
+        public override void Dispose()
+        {
+            _h264Parser?.Dispose();
+            _nalStream?.Dispose();
+        }
     }
 }

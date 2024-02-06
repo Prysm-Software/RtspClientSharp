@@ -25,37 +25,40 @@ namespace RtspClientSharp.Rtsp
         {
             Debug.Assert(byteSegment.Array != null, "byteSegment.Array != null");
 
-            var headersStream = new MemoryStream(byteSegment.Array, byteSegment.Offset, byteSegment.Count, false);
-            var headersReader = new StreamReader(headersStream);
+            using (var headersStream = new MemoryStream(byteSegment.Array, byteSegment.Offset, byteSegment.Count, false))
+            {
+                using (var headersReader = new StreamReader(headersStream))
+                {
+                    string startLine = headersReader.ReadLine();
 
-            string startLine = headersReader.ReadLine();
+                    if (startLine == null)
+                        throw new RtspParseResponseException("Empty response");
 
-            if (startLine == null)
-                throw new RtspParseResponseException("Empty response");
+                    string[] tokens = GetFirstLineTokens(startLine);
 
-            string[] tokens = GetFirstLineTokens(startLine);
+                    string rtspVersion = tokens[0];
 
-            string rtspVersion = tokens[0];
+                    Version protocolVersion = ParseProtocolVersion(rtspVersion);
+                    RtspStatusCode statusCode = ParseStatusCode(tokens[1]);
 
-            Version protocolVersion = ParseProtocolVersion(rtspVersion);
-            RtspStatusCode statusCode = ParseStatusCode(tokens[1]);
+                    NameValueCollection headers = HeadersParser.ParseHeaders(headersReader);
 
-            NameValueCollection headers = HeadersParser.ParseHeaders(headersReader);
+                    uint cSeq = 0;
+                    string cseqValue = headers.Get("CSEQ");
 
-            uint cSeq = 0;
-            string cseqValue = headers.Get("CSEQ");
+                    if (cseqValue != null)
+                        uint.TryParse(cseqValue, out cSeq);
 
-            if (cseqValue != null)
-                uint.TryParse(cseqValue, out cSeq);
-
-            return new RtspResponseMessage(statusCode, protocolVersion, cSeq, headers);
+                    return new RtspResponseMessage(statusCode, protocolVersion, cSeq, headers);
+                }
+            }
         }
 
         public override string ToString()
         {
             var sb = new StringBuilder();
             sb.AppendFormat("RTSP/{0} {1} {2}\r\nCSeq: {3}\r\n",
-                ProtocolVersion, (int) StatusCode, StatusCode, CSeq);
+                ProtocolVersion, (int)StatusCode, StatusCode, CSeq);
 
             foreach (string key in Headers.AllKeys)
                 sb.AppendFormat("{0}: {1}\r\n", key, Headers.Get(key));
@@ -78,7 +81,7 @@ namespace RtspClientSharp.Rtsp
             if (!int.TryParse(statusCode, out int code))
                 throw new RtspParseResponseException($"Invalid status code: {statusCode}");
 
-            return (RtspStatusCode) code;
+            return (RtspStatusCode)code;
         }
 
         private static string[] GetFirstLineTokens(string startLine)
