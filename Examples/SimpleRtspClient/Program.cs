@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Net;
+using System.Runtime.Remoting.Messaging;
 using System.Threading;
 using System.Threading.Tasks;
 using RtspClientSharp;
@@ -22,11 +23,12 @@ namespace SimpleRtspClient
             //var serverUri = new Uri("rtsp://onvif:Prysm-123@192.168.50.17:554/live/bf4f8cb1-f4bf-4fda-aeef-9e6fd5ffc03f"); // milestone MOBOTIX
             //var serverUri = new Uri("rtsp://admin:Prysm123@192.168.40.34:554/Streaming/Channels/102?transportmode=unicast&profile=Profile_2"); // HIK h265
             //var serverUri = new Uri("rtsp://admin:pass@192.168.40.33/stream1"); // mobotix
-            var serverUri = new Uri("rtsp://root:pass@192.168.40.31/onvif-media/media.amp?profile=profile_2_h264"); // axis acceuil
+            //var serverUri = new Uri("rtsp://root:pass@192.168.40.31/onvif-media/media.amp?profile=profile_2_h264"); // axis acceuil
             //var serverUri = new Uri("rtsp://admin:prysm-123@192.168.40.111/0/onvif/profile1/media.smp"); // wisenet
             //var serverUri = new Uri("rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mp4");
-            //var serverUri = new Uri("rtsp://hello:world@192.168.50.1/Profile.C0.S0.unicast");
+            var serverUri = new Uri("rtsp://hello:world@192.168.50.1/Profile.C0.S0.unicast");
             //var serverUri = new Uri("rtsp://onvif:Prysm-123@192.168.50.17:554/vod/bf4f8cb1-f4bf-4fda-aeef-9e6fd5ffc03f");
+            //var serverUri = new Uri("rtsp://admin:Prysm123@192.168.50.11/ISAPI/streaming/tracks/401?starttime=20240318T080652Z&endtime=20240318T081506Z "); // HIK
 
             var connectionParameters = new ConnectionParameters(serverUri)
             {
@@ -95,7 +97,6 @@ namespace SimpleRtspClient
                         await _rtspClient.ConnectAsync(new RtspRequestParams
                         {
                             Token = token,
-                            
                         });
                     }
                     catch (OperationCanceledException)

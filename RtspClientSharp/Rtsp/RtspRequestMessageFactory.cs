@@ -54,26 +54,17 @@ namespace RtspClientSharp.Rtsp
             return rtspRequestMessage;
         }
 
-        public RtspRequestMessage CreatePlayRequest()
+        public RtspRequestMessage CreatePlayRequest(RtspRequestParams connectionParams = null)
         {
-            Uri uri = GetContentBasedUri();
+            var uri = GetContentBasedUri();
+            var rtspRequestMessage = new RtspRequestMessage(RtspMethod.PLAY, uri, ProtocolVersion, NextCSeqProvider, _userAgent, SessionId);
 
-            var rtspRequestMessage =
-                new RtspRequestMessage(RtspMethod.PLAY, uri, ProtocolVersion, NextCSeqProvider, _userAgent, SessionId);
-            rtspRequestMessage.Headers.Add("Range", "npt=0.000-");
-            return rtspRequestMessage;
-        }
-
-        public RtspRequestMessage CreatePlayRequest(RtspRequestParams connectionParams)
-        {
-            Uri uri = GetContentBasedUri();
-
-            var rtspRequestMessage =
-                new RtspRequestMessage(RtspMethod.PLAY, uri, ProtocolVersion, NextCSeqProvider, _userAgent, SessionId);
-            if (connectionParams.InitialTimestamp.Value.Kind == DateTimeKind.Utc)
+            if (connectionParams?.InitialTimestamp?.Kind == DateTimeKind.Utc)
                 rtspRequestMessage.Headers.Add("Range", $"clock={connectionParams.InitialTimestamp.Value.ToString("yyyyMMddTHHmmssZ")}-");
-            else
+            else if (connectionParams?.InitialTimestamp != null)
                 rtspRequestMessage.Headers.Add("Range", $"clock={DateTime.SpecifyKind(connectionParams.InitialTimestamp.Value, DateTimeKind.Utc).ToString("yyyyMMddTHHmmssZ")}-");
+            else
+                rtspRequestMessage.Headers.Add("Range", "npt=0.000-");
 
             if (connectionParams?.Headers != null)
                 foreach (var item in connectionParams.Headers)

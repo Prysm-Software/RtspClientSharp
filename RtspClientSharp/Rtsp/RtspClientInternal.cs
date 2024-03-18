@@ -111,9 +111,10 @@ namespace RtspClientSharp.Rtsp
                 throw new RtspClientException("Any suitable track is not found");
 
             // TODO: Seems like some timestamps are being returned with 2 different timezones and/or some difference between the requested datetime and the returned one.
-            RtspRequestMessage playRequest = requestParams.IsSetTimestampInClock ? _requestMessageFactory.CreatePlayRequest(requestParams) : _requestMessageFactory.CreatePlayRequest();
-            RtspResponseMessage playResponse =
-            await _rtspTransportClient.EnsureExecuteRequest(playRequest, requestParams.Token, 1);
+            //RtspRequestMessage playRequest = requestParams.IsSetTimestampInClock ? _requestMessageFactory.CreatePlayRequest(requestParams) : _requestMessageFactory.CreatePlayRequest();
+
+            RtspRequestMessage playRequest = _requestMessageFactory.CreatePlayRequest(requestParams);
+            RtspResponseMessage playResponse = await _rtspTransportClient.EnsureExecuteRequest(playRequest, requestParams.Token, 1);
 
             //// TODO : Create a specific parse to convert the clock values
             //Regex clockRegex = new Regex(@"clock=(?<startTime>\d{8}T\d{6}Z)\-(?<endTime>\d{8}T\d{6}Z)", RegexOptions.Singleline);

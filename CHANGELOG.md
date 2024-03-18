@@ -1,3 +1,7 @@
+2.0.3.0
+==========================
+Fix: On RtspRequestParams objects, headers were not taken in account if the parameter InitialTimestamp wasn't set.
+
 2.0.2.0
 ==========================
 Fix: Memoryleak when connecting/disconnecting.
