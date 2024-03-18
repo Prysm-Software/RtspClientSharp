@@ -7,7 +7,7 @@ namespace RtspClientSharp.Rtcp
     {
         public uint SyncSourceId { get; private set; }
         public long NtpTimestamp { get; private set; }
-        //public DateTime Date { get; private set; }
+        public DateTime Date { get; private set; }
 
         protected override void FillFromByteSegment(ArraySegment<byte> byteSegment)
         {
@@ -17,7 +17,7 @@ namespace RtspClientSharp.Rtcp
             uint ntpTimestampLw = BigEndianConverter.ReadUInt32(byteSegment.Array, byteSegment.Offset + 8);
 
             NtpTimestamp = (long) ntpTimestampMw << 32 | ntpTimestampLw;
-            //Date = TimeUtils.GetDateFromNtpTimestamp((ulong)NtpTimestamp);
+            Date = TimeUtils.GetDateFromNtpTimestamp((ulong)NtpTimestamp);
         }
     }
 }

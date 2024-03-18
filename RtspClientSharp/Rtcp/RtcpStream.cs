@@ -11,6 +11,7 @@ namespace RtspClientSharp.Rtcp
 
         public DateTime LastTimeReportReceived => new DateTime(Interlocked.Read(ref _lastTimeReportReceivedTicks));
         public long LastNtpTimeReportReceived => Interlocked.Read(ref _lastNtpTimeReportReceived);
+        public DateTime? LastNtpDateTimeReportReceived { get; private set; }
 
         public event EventHandler SessionShutdown;
 
@@ -25,6 +26,7 @@ namespace RtspClientSharp.Rtcp
                     case RtcpSenderReportPacket senderReport:
                         Interlocked.Exchange(ref _lastNtpTimeReportReceived, senderReport.NtpTimestamp);
                         Interlocked.Exchange(ref _lastTimeReportReceivedTicks, DateTime.UtcNow.Ticks);
+                        LastNtpDateTimeReportReceived = senderReport.Date;
                         break;
                     case RtcpByePacket _:
                         SessionShutdown?.Invoke(this, EventArgs.Empty);

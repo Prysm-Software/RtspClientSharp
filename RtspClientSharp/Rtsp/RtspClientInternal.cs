@@ -573,6 +573,10 @@ namespace RtspClientSharp.Rtsp
 
                     int ticksNow = Environment.TickCount;
 
+                    if (stream is RtcpStream rtcpStream && rtcpStream.LastNtpDateTimeReportReceived != null)
+                        foreach (var item in _mediaPayloadParser)
+                            item.BaseTime = rtcpStream.LastNtpDateTimeReportReceived.Value;
+
                     if (!TimeUtils.IsTimeOver(ticksNow, lastTimeRtcpReportsSent, nextRtcpReportInterval))
                         continue;
 
@@ -663,21 +667,25 @@ namespace RtspClientSharp.Rtsp
             });
         }
 
-        private static Task ReceiveRtcpFromUdpAsync(Socket client, ITransportStream stream, CancellationToken token)
+        private Task ReceiveRtcpFromUdpAsync(Socket client, ITransportStream stream, CancellationToken token)
         {
             return Task.Run(() =>
             {
                 var readBuffer = new byte[Constants.UdpReceiveBufferSize];
                 var bufferSegment = new ArraySegment<byte>(readBuffer);
+
                 while (!token.IsCancellationRequested)
                 {
                     try
                     {
                         //int read = await client.ReceiveAsync(bufferSegment, SocketFlags.None); // fuite mémoire avec le receiveasync
-
                         int read = client.Receive(readBuffer, SocketFlags.None);
                         var payloadSegment = new ArraySegment<byte>(readBuffer, 0, read);
                         stream.Process(payloadSegment);
+
+                        if (stream is RtcpStream rtcpStream && rtcpStream.LastNtpDateTimeReportReceived != null)
+                            foreach (var item in _mediaPayloadParser)
+                                item.BaseTime = rtcpStream.LastNtpDateTimeReportReceived.Value;
                     }
                     catch (Exception ex)
                     {

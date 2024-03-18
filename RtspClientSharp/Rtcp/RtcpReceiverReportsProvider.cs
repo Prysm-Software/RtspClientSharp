@@ -64,9 +64,14 @@ namespace RtspClientSharp.Rtcp
             uint extHighestSequenceNumberReceived = (uint) (_rtpStatisticsProvider.SequenceCycles << 16 |
                                                             _rtpStatisticsProvider.HighestSequenceNumberReceived);
 
-            var rtcpReportBlock = new RtcpReportBlock(_rtpStatisticsProvider.SyncSourceId, fractionLost,
-                _rtpStatisticsProvider.CumulativePacketLost, extHighestSequenceNumberReceived, 0,
-                lastNtpTimeSenderReportReceived, delaySinceLastTimeSenderReportReceived);
+            var rtcpReportBlock = new RtcpReportBlock(
+                _rtpStatisticsProvider.SyncSourceId, 
+                fractionLost,
+                _rtpStatisticsProvider.CumulativePacketLost, 
+                extHighestSequenceNumberReceived, 
+                0,
+                lastNtpTimeSenderReportReceived, 
+                delaySinceLastTimeSenderReportReceived);
 
             var receiverReport = new RtcpReceiverReportPacket(_senderSyncSourceId, new[] {rtcpReportBlock});
 
