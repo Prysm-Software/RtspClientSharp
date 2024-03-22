@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Runtime.InteropServices.ComTypes;
 using System.Threading;
 using System.Threading.Tasks;
 using RtspClientSharp.Codecs.Audio;
@@ -58,8 +59,7 @@ namespace RtspClientSharp.Rtsp
         public RtspClientInternal(ConnectionParameters connectionParameters,
             Func<IRtspTransportClient> transportClientProvider = null)
         {
-            _connectionParameters =
-                connectionParameters ?? throw new ArgumentNullException(nameof(connectionParameters));
+            _connectionParameters = connectionParameters ?? throw new ArgumentNullException(nameof(connectionParameters));
             _transportClientProvider = transportClientProvider ?? CreateTransportClient;
 
             Uri fixedRtspUri = connectionParameters.GetFixedRtspUri();
@@ -343,7 +343,7 @@ namespace RtspClientSharp.Rtsp
             ParseSessionHeader(setupResponse.Headers[WellKnownHeaders.Session]);
 
             var mediaPayloadParser = MediaPayloadParser.CreateFrom(track.Codec, OnNaluReceived);
-            mediaPayloadParser.BaseTime = (initialTimeStamp != null ? initialTimeStamp.Value : default(DateTime));
+            mediaPayloadParser.BaseTime = initialTimeStamp != null ? initialTimeStamp.Value : default;
 
             IRtpSequenceAssembler rtpSequenceAssembler;
 
@@ -573,9 +573,7 @@ namespace RtspClientSharp.Rtsp
 
                     int ticksNow = Environment.TickCount;
 
-                    if (stream is RtcpStream rtcpStream && rtcpStream.LastNtpDateTimeReportReceived != null)
-                        foreach (var item in _mediaPayloadParser)
-                            item.BaseTime = rtcpStream.LastNtpDateTimeReportReceived.Value;
+                    RebaseOnRtcpTime(stream);
 
                     if (!TimeUtils.IsTimeOver(ticksNow, lastTimeRtcpReportsSent, nextRtcpReportInterval))
                         continue;
@@ -678,14 +676,14 @@ namespace RtspClientSharp.Rtsp
                 {
                     try
                     {
-                        //int read = await client.ReceiveAsync(bufferSegment, SocketFlags.None); // fuite mémoire avec le receiveasync
+                        // All socket async method cause memoryleak in .NetFramework (But not in .NetCore).
+                        //int read = await client.ReceiveAsync(bufferSegment, SocketFlags.None); 
+
                         int read = client.Receive(readBuffer, SocketFlags.None);
                         var payloadSegment = new ArraySegment<byte>(readBuffer, 0, read);
                         stream.Process(payloadSegment);
 
-                        if (stream is RtcpStream rtcpStream && rtcpStream.LastNtpDateTimeReportReceived != null)
-                            foreach (var item in _mediaPayloadParser)
-                                item.BaseTime = rtcpStream.LastNtpDateTimeReportReceived.Value;
+                        RebaseOnRtcpTime(stream);
                     }
                     catch (Exception ex)
                     {
@@ -705,6 +703,18 @@ namespace RtspClientSharp.Rtsp
 
             byte[] streamBuffer = bufferStream.GetBuffer();
             return new ArraySegment<byte>(streamBuffer, 0, (int)bufferStream.Position);
+        }
+
+        private void RebaseOnRtcpTime(ITransportStream stream)
+        {
+            var rtcpStream = stream as RtcpStream;
+            if (rtcpStream?.LastNtpDateTimeReportReceived == null)
+                return;
+
+            foreach (var item in _mediaPayloadParser)
+                item.BaseTime = rtcpStream.LastNtpDateTimeReportReceived.Value;
+            foreach (var item in _streamsMap.Where(s => s.Value is RtpStream).Select(s => s.Value as RtpStream))
+                item.ResetTimestamp();
         }
     }
 }

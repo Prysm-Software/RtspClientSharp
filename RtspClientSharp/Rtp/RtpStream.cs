@@ -43,8 +43,6 @@ namespace RtspClientSharp.Rtp
             if (!RtpPacket.TryParse(payloadSegment, out RtpPacket rtpPacket))
                 return;
 
-            //Debug.WriteLine($"[RTPStream] Process {rtpPacket.SeqNumber}");
-
             if (_rtpSequenceAssembler != null)
                 _rtpSequenceAssembler.ProcessPacket(ref rtpPacket);
             else
@@ -73,7 +71,6 @@ namespace RtspClientSharp.Rtp
 
                     PacketsLostSinceLastReset += lostCount;
 
-                    //Debug.WriteLine($"[RTPStream] Reset payload parser state");
                     _mediaPayloadParser.ResetState();
                 }
 
@@ -84,7 +81,6 @@ namespace RtspClientSharp.Rtp
                     _samplesSum += rtpPacket.Timestamp - _previousTimestamp;
                 else
                     _samplesSum += _previousTimestamp - rtpPacket.Timestamp;
-
             }
 
             HighestSequenceNumberReceived = rtpPacket.SeqNumber;
@@ -98,7 +94,7 @@ namespace RtspClientSharp.Rtp
                 return;
 
             TimeSpan timeOffset = _samplesFrequency != 0
-                ? new TimeSpan((_samplesSum * 1000 / (uint)_samplesFrequency * TimeSpan.TicksPerMillisecond))
+                ? new TimeSpan(_samplesSum * 1000 / (uint)_samplesFrequency * TimeSpan.TicksPerMillisecond)
                 : TimeSpan.MinValue;
 
             _mediaPayloadParser.Parse(timeOffset, rtpPacket.PayloadSegment, rtpPacket.MarkerBit);
@@ -108,6 +104,11 @@ namespace RtspClientSharp.Rtp
         {
             PacketsLostSinceLastReset = 0;
             PacketsReceivedSinceLastReset = 0;
+        }
+
+        public void ResetTimestamp()
+        {
+            _samplesSum = 0;
         }
     }
 }

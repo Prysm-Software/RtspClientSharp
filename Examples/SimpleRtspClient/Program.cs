@@ -28,9 +28,10 @@ namespace SimpleRtspClient
             //var serverUri = "rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mp4";
             //var serverUri = "rtsp://hello:world@192.168.50.1/Profile.C0.S0.unicast";
             //var serverUri = "rtsp://hello:world@192.168.50.1/R.D0.C8.S0";
-            var serverUri = "rtsp://onvif:Prysm-123@192.168.50.17:554/vod/bf4f8cb1-f4bf-4fda-aeef-9e6fd5ffc03f";
+            //var serverUri = "rtsp://onvif:Prysm-123@192.168.50.17:554/vod/bf4f8cb1-f4bf-4fda-aeef-9e6fd5ffc03f";
             //var serverUri = "rtsp://admin:Prysm123@192.168.50.11/ISAPI/streaming/tracks/401?starttime=20240318T080652Z&endtime=20240318T081506Z"; // HIK
             //var serverUri = "rtsp://appvision:Prysm123@192.168.20.44:7001/799f1fd2-0a68-1fab-7d12-5b184c8d7409?speed=1&pos=1709265600000";
+            var serverUri = "rtsp://root:pass@192.168.0.200/onvif-media/media.amp?profile=profile_1_h264"; // axis
 
             var connectionParameters = new ConnectionParameters(new Uri(serverUri))
             {
