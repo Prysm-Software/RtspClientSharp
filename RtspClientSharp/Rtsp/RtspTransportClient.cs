@@ -49,7 +49,7 @@ namespace RtspClientSharp.Rtsp
             if (responseMessage.StatusCode != RtspStatusCode.Unauthorized)
                 return responseMessage;
 
-            if (ConnectionParameters.Credentials.IsEmpty() || _authenticator != null)
+            if (ConnectionParameters.Credentials.IsEmpty() /*|| _authenticator != null*/)
                 throw new RtspBadResponseCodeException(responseMessage.StatusCode);
 
             string authenticateHeader = responseMessage.Headers[WellKnownHeaders.WwwAuthenticate];
@@ -176,7 +176,7 @@ namespace RtspClientSharp.Rtsp
             string headerValue = _authenticator.GetResponse(request.CSeq, uri.ToString(),
                 request.Method.ToString(), Array.Empty<byte>());
 
-            request.Headers.Add("Authorization", headerValue);
+            request.Headers.Set("Authorization", headerValue);
         }
     }
 }

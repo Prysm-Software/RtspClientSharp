@@ -1,3 +1,8 @@
+2.0.5.0
+==========================
+Fix: UnobservedTaskException when the rtsp keepalive task failed resulting the receive task not being waited and throwing a WSACancelBlockingCall
+Fix: 401 Unauthorized when calling RTSP Verb GET_PARAMETER on some devices.
+
 2.0.4.1
 ==========================
 Add: Handles RTCP timestamp

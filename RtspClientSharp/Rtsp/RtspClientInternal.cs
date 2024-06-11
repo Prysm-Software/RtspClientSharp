@@ -131,38 +131,72 @@ namespace RtspClientSharp.Rtsp
             if (_rtspTransportClient == null)
                 throw new InvalidOperationException("Client should be connected first");
 
-            TimeSpan nextRtspKeepAliveInterval = GetNextRtspKeepAliveInterval();
-
             using (var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(_serverCancellationTokenSource.Token, token))
             {
                 CancellationToken linkedToken = linkedTokenSource.Token;
+                Exception keepAliveError = null;
 
-                Task receiveTask = _connectionParameters.RtpTransport == RtpTransportProtocol.TCP
-                    ? ReceiveOverTcpAsync(_rtspTransportClient.GetStream(), linkedToken)
-                    : ReceiveOverUdpAsync(linkedToken);
-
-                if (!_isServerSupportsGetParameterRequest)
-                    await receiveTask;
-                else
+                if (_isServerSupportsGetParameterRequest)
                 {
-                    Task rtspKeepAliveDelayTask = Task.Delay(nextRtspKeepAliveInterval, linkedToken);
-
-                    while (true)
+                    _ = Task.Run(async () =>
                     {
-                        Task result = await Task.WhenAny(receiveTask, rtspKeepAliveDelayTask);
-
-                        if (result == receiveTask || result.IsCanceled)
+                        try
                         {
-                            await receiveTask;
-                            break;
+                            TimeSpan nextRtspKeepAliveInterval = GetNextRtspKeepAliveInterval();
+
+                            while (true)
+                            {
+                                await Task.Delay(nextRtspKeepAliveInterval, linkedToken);
+
+                                nextRtspKeepAliveInterval = GetNextRtspKeepAliveInterval();
+                                await SendRtspKeepAliveAsync(linkedToken);
+                            }
                         }
-
-                        nextRtspKeepAliveInterval = GetNextRtspKeepAliveInterval();
-                        rtspKeepAliveDelayTask = Task.Delay(nextRtspKeepAliveInterval, linkedToken);
-
-                        await SendRtspKeepAliveAsync(linkedToken);
-                    }
+                        catch (Exception ex)
+                        {
+                            keepAliveError = ex;
+                            linkedTokenSource.Cancel();
+                        }
+                    });
                 }
+
+                if (_connectionParameters.RtpTransport == RtpTransportProtocol.TCP)
+                    await ReceiveOverTcpAsync(_rtspTransportClient.GetStream(), linkedToken);
+                else
+                    await ReceiveOverUdpAsync(linkedToken);
+
+                if (keepAliveError != null)
+                    throw keepAliveError;
+
+
+                // Ancien fonctionnement.
+                //Task receiveTask = _connectionParameters.RtpTransport == RtpTransportProtocol.TCP
+                //    ? ReceiveOverTcpAsync(_rtspTransportClient.GetStream(), linkedToken)
+                //    : ReceiveOverUdpAsync(linkedToken);
+
+                //if (!_isServerSupportsGetParameterRequest)
+                //    await receiveTask;
+                //else
+                //{
+                //    Task rtspKeepAliveDelayTask = Task.Delay(nextRtspKeepAliveInterval, linkedToken);
+
+                //    while (true)
+                //    {
+                //        Task result = await Task.WhenAny(receiveTask, rtspKeepAliveDelayTask);
+
+                //        Le fait de sortir du await peut créer une unobserved task exception sur le receiveTask throw à ce moment là.
+                //        if (result == receiveTask || result.IsCanceled)
+                //        {
+                //            await receiveTask;
+                //            break;
+                //        }
+
+                //        nextRtspKeepAliveInterval = GetNextRtspKeepAliveInterval();
+                //        rtspKeepAliveDelayTask = Task.Delay(nextRtspKeepAliveInterval, linkedToken);
+
+                //        await SendRtspKeepAliveAsync(linkedToken);
+                //    }
+                //}
 
                 if (linkedToken.IsCancellationRequested)
                 {
@@ -221,6 +255,7 @@ namespace RtspClientSharp.Rtsp
             else
                 await _rtspTransportClient.EnsureExecuteRequest(request, requestParams.Token);
         }
+
 
         private IRtspTransportClient CreateTransportClient()
         {

@@ -1,65 +1,65 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Authors>Kirill Bogdanov, Prysm</Authors>
-    <RepositoryUrl>https://github.com/Prysm-Software/RtspClientSharp</RepositoryUrl>
-    <PackageTags>rtsp, rtp, rtcp</PackageTags>
-    <Description> C# RTSP Client for .NET
+	<PropertyGroup>
+		<TargetFramework>netstandard2.0</TargetFramework>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<Authors>Kirill Bogdanov, Prysm</Authors>
+		<RepositoryUrl>https://github.com/Prysm-Software/RtspClientSharp</RepositoryUrl>
+		<PackageTags>rtsp, rtp, rtcp</PackageTags>
+		<Description>C# RTSP Client for .NET
 
- - Supported transport protocols: TCP/HTTP/UDP
- - Supported media codecs: H.264/H.265/MJPEG/AAC/G711A/G711U/PCM/G726/OnvifMetadata
- - No external dependencies, pure C# code
- - Asynchronous nature with cancellation tokens support
- - Designed to be fast and scaleable
- - Low GC pressure during receive stage (when RTSP session is established); low amount of freezes under high load    </Description>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageIconUrl>https://github.com/BogdanovKirill/RtspClientSharp/blob/master/Images/package_icon.png?raw=true</PackageIconUrl>
-    <Copyright>Copyright ©2024 Kirill Bogdanov, Prysm</Copyright>
-    <Version>2.0.4.1</Version>
-    <PackageReleaseNotes>Fix: UnobservedTaskException when closing udpsockets
-Fix: Increase UDP receive buffer size (missing packets with some streams)
-Add: Event NaluReceived</PackageReleaseNotes>
-    <RepositoryType>git</RepositoryType>
-    <Platforms>AnyCPU;x64;x86</Platforms>
-    <Configurations>Debug;Release;Publish</Configurations>
-    <AssemblyOriginatorKeyFile>signkey.pfx</AssemblyOriginatorKeyFile>
-    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <FileVersion></FileVersion>
-    <PackageProjectUrl>https://github.com/Prysm-Software/RtspClientSharp</PackageProjectUrl>
-  </PropertyGroup>
+- Supported transport protocols: TCP/HTTP/UDP
+- Supported media codecs: H.264/H.265/MJPEG/AAC/G711A/G711U/PCM/G726/OnvifMetadata
+- No external dependencies, pure C# code
+- Asynchronous nature with cancellation tokens support
+- Designed to be fast and scaleable
+- Low GC pressure during receive stage (when RTSP session is established); low amount of freezes under high load
+		</Description>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<PackageIconUrl>https://github.com/BogdanovKirill/RtspClientSharp/blob/master/Images/package_icon.png?raw=true</PackageIconUrl>
+		<Copyright>Copyright ©2024 Kirill Bogdanov, Prysm</Copyright>
+		<Version>2.0.5.0</Version>
+		<PackageReleaseNotes>Fix: UnobservedTaskException when the rtsp keepalive task failed resulting the receive task not being waited and throwing a WSACancelBlockingCall
+Fix: 401 Unauthorized when calling RTSP Verb GET_PARAMETER on some devices.</PackageReleaseNotes>
+		<RepositoryType>git</RepositoryType>
+		<Platforms>AnyCPU;x64;x86</Platforms>
+		<Configurations>Debug;Release;Publish</Configurations>
+		<AssemblyOriginatorKeyFile>signkey.pfx</AssemblyOriginatorKeyFile>
+		<PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+		<FileVersion></FileVersion>
+		<PackageProjectUrl>https://github.com/Prysm-Software/RtspClientSharp</PackageProjectUrl>
+	</PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <DocumentationFile>bin\Release\netstandard2.0\RtspClientSharp.xml</DocumentationFile>
-  </PropertyGroup>
-  
-  <PropertyGroup Condition="'$(Configuration)'=='Publish'">
-    <DocumentationFile>bin\Release\netstandard2.0\RtspClientSharp.xml</DocumentationFile>
-	<SignAssembly>true</SignAssembly>
-	<DefineConstants>TRACE;PUBLISH</DefineConstants>
-  </PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+		<DocumentationFile>bin\Release\netstandard2.0\RtspClientSharp.xml</DocumentationFile>
+	</PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
-    <DocumentationFile>bin\Release\netstandard2.0\RtspClientSharp.xml</DocumentationFile>
-  </PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)'=='Publish'">
+		<DocumentationFile>bin\Release\netstandard2.0\RtspClientSharp.xml</DocumentationFile>
+		<SignAssembly>true</SignAssembly>
+		<DefineConstants>TRACE;PUBLISH</DefineConstants>
+	</PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Publish|x86'">
-    <DocumentationFile>bin\Release\netstandard2.0\RtspClientSharp.xml</DocumentationFile>
-  </PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
+		<DocumentationFile>bin\Release\netstandard2.0\RtspClientSharp.xml</DocumentationFile>
+	</PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <DocumentationFile>bin\Release\netstandard2.0\RtspClientSharp.xml</DocumentationFile>
-  </PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Publish|x86'">
+		<DocumentationFile>bin\Release\netstandard2.0\RtspClientSharp.xml</DocumentationFile>
+	</PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Publish|x64'">
-    <DocumentationFile>bin\Release\netstandard2.0\RtspClientSharp.xml</DocumentationFile>
-  </PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+		<DocumentationFile>bin\Release\netstandard2.0\RtspClientSharp.xml</DocumentationFile>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <Compile Remove="obj\**" />
-    <EmbeddedResource Remove="obj\**" />
-    <None Remove="obj\**" />
-  </ItemGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Publish|x64'">
+		<DocumentationFile>bin\Release\netstandard2.0\RtspClientSharp.xml</DocumentationFile>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<Compile Remove="obj\**" />
+		<EmbeddedResource Remove="obj\**" />
+		<None Remove="obj\**" />
+	</ItemGroup>
 
 </Project>
