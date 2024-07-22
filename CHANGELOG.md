@@ -1,3 +1,7 @@
+2.0.6.0
+==========================
+Fix: KeepAlive rtsp request were only sent if the server support GET_PARAMETER request. Now if it does not support GET_PARAMETER we sent OPTION for keepalive
+
 2.0.5.0
 ==========================
 Fix: UnobservedTaskException when the rtsp keepalive task failed resulting the receive task not being waited and throwing a WSACancelBlockingCall

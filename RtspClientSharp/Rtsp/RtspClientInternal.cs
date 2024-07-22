@@ -136,29 +136,27 @@ namespace RtspClientSharp.Rtsp
                 CancellationToken linkedToken = linkedTokenSource.Token;
                 Exception keepAliveError = null;
 
-                if (_isServerSupportsGetParameterRequest)
+                
+                _ = Task.Run(async () =>
                 {
-                    _ = Task.Run(async () =>
+                    try
                     {
-                        try
-                        {
-                            TimeSpan nextRtspKeepAliveInterval = GetNextRtspKeepAliveInterval();
+                        TimeSpan nextRtspKeepAliveInterval = GetNextRtspKeepAliveInterval();
 
-                            while (true)
-                            {
-                                await Task.Delay(nextRtspKeepAliveInterval, linkedToken);
-
-                                nextRtspKeepAliveInterval = GetNextRtspKeepAliveInterval();
-                                await SendRtspKeepAliveAsync(linkedToken);
-                            }
-                        }
-                        catch (Exception ex)
+                        while (true)
                         {
-                            keepAliveError = ex;
-                            linkedTokenSource.Cancel();
+                            await Task.Delay(nextRtspKeepAliveInterval, linkedToken);
+
+                            nextRtspKeepAliveInterval = GetNextRtspKeepAliveInterval();
+                            await SendRtspKeepAliveAsync(linkedToken);
                         }
-                    });
-                }
+                    }
+                    catch (Exception ex)
+                    {
+                        keepAliveError = ex;
+                        linkedTokenSource.Cancel();
+                    }
+                });
 
                 if (_connectionParameters.RtpTransport == RtpTransportProtocol.TCP)
                     await ReceiveOverTcpAsync(_rtspTransportClient.GetStream(), linkedToken);
@@ -415,12 +413,14 @@ namespace RtspClientSharp.Rtsp
 
         private async Task SendRtspKeepAliveAsync(CancellationToken token)
         {
-            RtspRequestMessage getParameterRequest = _requestMessageFactory.CreateGetParameterRequest();
+            RtspRequestMessage request = _isServerSupportsGetParameterRequest 
+                ? _requestMessageFactory.CreateGetParameterRequest()
+                : _requestMessageFactory.CreateOptionsRequest();
 
             if (_connectionParameters.RtpTransport == RtpTransportProtocol.TCP)
-                await _rtspTransportClient.SendRequestAsync(getParameterRequest, token);
+                await _rtspTransportClient.SendRequestAsync(request, token);
             else
-                await _rtspTransportClient.EnsureExecuteRequest(getParameterRequest, token);
+                await _rtspTransportClient.EnsureExecuteRequest(request, token);
         }
 
         private async Task CloseRtspSessionAsync(CancellationToken token)

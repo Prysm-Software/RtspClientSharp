@@ -18,9 +18,8 @@
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<PackageIconUrl>https://github.com/BogdanovKirill/RtspClientSharp/blob/master/Images/package_icon.png?raw=true</PackageIconUrl>
 		<Copyright>Copyright ©2024 Kirill Bogdanov, Prysm</Copyright>
-		<Version>2.0.5.0</Version>
-		<PackageReleaseNotes>Fix: UnobservedTaskException when the rtsp keepalive task failed resulting the receive task not being waited and throwing a WSACancelBlockingCall
-Fix: 401 Unauthorized when calling RTSP Verb GET_PARAMETER on some devices.</PackageReleaseNotes>
+		<Version>2.0.6.0</Version>
+		<PackageReleaseNotes>Fix: KeepAlive rtsp request were only sent if the server support GET_PARAMETER request. Now if it does not support GET_PARAMETER we sent OPTION for keepalive</PackageReleaseNotes>
 		<RepositoryType>git</RepositoryType>
 		<Platforms>AnyCPU;x64;x86</Platforms>
 		<Configurations>Debug;Release;Publish</Configurations>
