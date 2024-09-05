@@ -15,37 +15,30 @@ namespace RtspClientLeakTest
         private static readonly int timeout = 5000;
         private static readonly ConnectionParameters[] _uris =
         {
-            new ConnectionParameters(new Uri("rtsp://192.168.40.111/0/onvif/profile2/media.smp"), new NetworkCredential("admin", "prysm-123"))
-            {
-                RequiredTracks = RequiredTracks.All,
-                RtpTransport = RtpTransportProtocol.UDP,
-                CancelTimeout = TimeSpan.FromMilliseconds(timeout),
-                ReceiveTimeout = TimeSpan.FromMilliseconds(timeout),
-                ConnectTimeout = TimeSpan.FromMilliseconds(timeout),
-            },
-            new ConnectionParameters(new Uri("rtsp://192.168.40.33/stream1"), new NetworkCredential("admin", "pass"))
-            {
-                RequiredTracks = RequiredTracks.All,
-                RtpTransport = RtpTransportProtocol.UDP,
-                CancelTimeout = TimeSpan.FromMilliseconds(timeout),
-                ReceiveTimeout = TimeSpan.FromMilliseconds(timeout),
-                ConnectTimeout = TimeSpan.FromMilliseconds(timeout),
-            },
-            new ConnectionParameters(new Uri("rtsp://192.168.40.34/Streaming/Channels/102?transportmode=unicast&profile=Profile_2"), new NetworkCredential("admin", "Prysm123"))
-            {
-                RequiredTracks = RequiredTracks.All,
-                RtpTransport = RtpTransportProtocol.UDP,
-                CancelTimeout = TimeSpan.FromMilliseconds(timeout),
-                ReceiveTimeout = TimeSpan.FromMilliseconds(timeout),
-                ConnectTimeout = TimeSpan.FromMilliseconds(timeout),
-            }
+            new ConnectionParameters(new Uri("rtsp://192.168.40.1/onvif-media/media.amp?profile=profile_1_h264"), new NetworkCredential("root", "pass")),
+            new ConnectionParameters(new Uri("rtsp://192.168.40.2/onvif-media/media.amp?profile=profile_1_h264"), new NetworkCredential("root", "pass")),
+            new ConnectionParameters(new Uri("rtsp://192.168.40.4/onvif-media/media.amp?profile=profile_1_h264"), new NetworkCredential("root", "pass")),
+            new ConnectionParameters(new Uri("rtsp://192.168.40.10/onvif-media/media.amp?profile=profile_1_h264"), new NetworkCredential("root", "pass")),
+            new ConnectionParameters(new Uri("rtsp://192.168.40.30/onvif-media/media.amp?profile=profile_1_h264"), new NetworkCredential("root", "pass")),
+            new ConnectionParameters(new Uri("rtsp://192.168.40.31/onvif-media/media.amp?profile=profile_1_h264"), new NetworkCredential("root", "pass")),
+            new ConnectionParameters(new Uri("rtsp://192.168.40.34/Streaming/Channels/102"), new NetworkCredential("admin", "Prysm123")),
+            new ConnectionParameters(new Uri("rtsp://192.168.40.34/Streaming/Channels/103"), new NetworkCredential("admin", "Prysm123"))
         };
 
         static void Main(string[] args)
         {
             TaskScheduler.UnobservedTaskException += (s, e) => Console.WriteLine("TaskScheduler.UnobservedTaskException");
 
-            for (int i = 0; i < 10; i++)
+            foreach (var uris in _uris)
+            {
+                uris.RequiredTracks = RequiredTracks.All;
+                uris.RtpTransport = RtpTransportProtocol.UDP;
+                uris.CancelTimeout = TimeSpan.FromMilliseconds(timeout);
+                uris.ReceiveTimeout = TimeSpan.FromMilliseconds(timeout);
+                uris.ConnectTimeout = TimeSpan.FromMilliseconds(timeout);
+            }
+
+            for (int i = 0; i < 20; i++)
                 Loop();
 
             Console.ReadLine();

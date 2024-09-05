@@ -1,3 +1,11 @@
+2.0.7.0
+==========================
+Fix: UnhandledException when canceling the linkedTokenSource in RtspClientInternal.ReceiveAsync:
+System.ObjectDisposedException CancellationTokenSource a été supprimé. ex=System.AggregateException: Aucune exception de tâche n'a été observée en attendant la tâche ou en accédant à sa propriété Exception. Par conséquent, l'exception non prise en charge a été à nouveau levée par le thread finaliseur. ---> System.ObjectDisposedException: CancellationTokenSource a été supprimé.
+   à System.Threading.CancellationTokenSource.ThrowObjectDisposedException()
+   à System.Threading.CancellationTokenSource.Cancel()
+   à RtspClientSharp.Rtsp.RtspClientInternal.<>c__DisplayClass25_0.<<ReceiveAsync>b__0>d.MoveNext()
+
 2.0.6.0
 ==========================
 Fix: KeepAlive rtsp request were only sent if the server support GET_PARAMETER request. Now if it does not support GET_PARAMETER we sent OPTION for keepalive

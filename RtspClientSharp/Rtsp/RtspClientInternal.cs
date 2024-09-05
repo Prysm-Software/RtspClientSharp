@@ -154,7 +154,11 @@ namespace RtspClientSharp.Rtsp
                     catch (Exception ex)
                     {
                         keepAliveError = ex;
-                        linkedTokenSource.Cancel();
+                        try
+                        {
+                            linkedTokenSource.Cancel();
+                        }
+                        catch { }
                     }
                 });
 
@@ -165,7 +169,6 @@ namespace RtspClientSharp.Rtsp
 
                 if (keepAliveError != null)
                     throw keepAliveError;
-
 
                 // Ancien fonctionnement.
                 //Task receiveTask = _connectionParameters.RtpTransport == RtpTransportProtocol.TCP
