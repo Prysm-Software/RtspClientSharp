@@ -21,7 +21,7 @@ namespace SimpleRtspClient
             TaskScheduler.UnobservedTaskException += TaskScheduler_UnobservedTaskException;
 
             //var serverUri = "rtsp://onvif:Prysm-123@192.168.50.17:554/live/bf4f8cb1-f4bf-4fda-aeef-9e6fd5ffc03f"; // milestone MOBOTIX
-            var serverUri = "rtsp://admin:Prysm123@192.168.40.34:554/Streaming/Channels/102?transportmode=unicast&profile=Profile_2"; // HIK h265
+            //var serverUri = "rtsp://admin:Prysm123@192.168.40.34:554/Streaming/Channels/102?transportmode=unicast&profile=Profile_2"; // HIK h265
             //var serverUri = "rtsp://admin:pass@192.168.40.33/stream1"; // mobotix
             //var serverUri = "rtsp://root:pass@192.168.40.31/onvif-media/media.amp?profile=profile_2_h264"; // axis acceuil
             //var serverUri = "rtsp://admin:prysm-123@192.168.40.111/0/onvif/profile1/media.smp"; // wisenet
@@ -33,6 +33,7 @@ namespace SimpleRtspClient
             //var serverUri = "rtsp://appvision:Prysm123@192.168.20.44:7001/799f1fd2-0a68-1fab-7d12-5b184c8d7409?speed=1&pos=1709265600000";
             //var serverUri = "rtsp://root:pass@192.168.0.200/onvif-media/media.amp?profile=profile_1_h264"; // axis
             //var serverUri = "rtsp://admin:@192.168.30.5/Interface/Cameras/Media?Camera=Mobotix&Profile=Visualization"; // digifort
+            var serverUri = "rtsp://appvision:prysm123@192.168.50.18/rtsp/Camera35"; // Cossilys
 
             var connectionParameters = new ConnectionParameters(new Uri(serverUri))
             {

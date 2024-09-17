@@ -1,3 +1,8 @@
+2.0.8.0
+==========================
+Fix: Wrong rtcp port on UDP. 
+Found on this PR: https://github.com/BogdanovKirill/RtspClientSharp/pull/64/files#diff-aa98d7b7b701b6008107edf12d1b35f0cc49656f2972d8309c6b78b2bc9cd44d
+
 2.0.7.0
 ==========================
 Fix: UnhandledException when canceling the linkedTokenSource in RtspClientInternal.ReceiveAsync:

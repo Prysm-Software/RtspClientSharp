@@ -23,7 +23,7 @@ namespace RtspClientSharp.Rtcp
             _machineName = Environment.MachineName;
         }
 
-        public IEnumerable<RtcpPacket> GetReportPackets()
+        public IEnumerable<RtcpPacket> GetReportSdesPackets()
         {
             RtcpReceiverReportPacket receiverReport = CreateReceiverReport();
 
@@ -32,6 +32,17 @@ namespace RtspClientSharp.Rtcp
             RtcpSdesReportPacket sdesReport = CreateSdesReport();
 
             yield return sdesReport;
+        }
+
+        public IEnumerable<RtcpPacket> GetReportByePackets()
+        {
+            RtcpReceiverReportPacket receiverReport = CreateReceiverReport();
+
+            yield return receiverReport;
+
+            RtcpByePacket byeReport = new RtcpByePacket(_senderSyncSourceId);
+
+            yield return byeReport;
         }
 
         private RtcpReceiverReportPacket CreateReceiverReport()
@@ -55,17 +66,17 @@ namespace RtspClientSharp.Rtcp
             else
             {
                 lastNtpTimeSenderReportReceived =
-                    (uint) ((_rtcpSenderStatisticsProvider.LastNtpTimeReportReceived >> 16) & uint.MaxValue);
+                    (uint)((_rtcpSenderStatisticsProvider.LastNtpTimeReportReceived >> 16) & uint.MaxValue);
 
                 TimeSpan delta = DateTime.UtcNow - _rtcpSenderStatisticsProvider.LastTimeReportReceived;
-                delaySinceLastTimeSenderReportReceived = (uint) delta.TotalSeconds * 65536;
+                delaySinceLastTimeSenderReportReceived = (uint)delta.TotalSeconds * 65536;
             }
 
-            uint extHighestSequenceNumberReceived = (uint) (_rtpStatisticsProvider.SequenceCycles << 16 |
+            uint extHighestSequenceNumberReceived = (uint)(_rtpStatisticsProvider.SequenceCycles << 16 |
                                                             _rtpStatisticsProvider.HighestSequenceNumberReceived);
 
             var rtcpReportBlock = new RtcpReportBlock(
-                _rtpStatisticsProvider.SyncSourceId, 
+                _rtpStatisticsProvider.SyncSourceId,
                 fractionLost,
                 _rtpStatisticsProvider.CumulativePacketLost, 
                 extHighestSequenceNumberReceived, 
@@ -73,7 +84,7 @@ namespace RtspClientSharp.Rtcp
                 lastNtpTimeSenderReportReceived, 
                 delaySinceLastTimeSenderReportReceived);
 
-            var receiverReport = new RtcpReceiverReportPacket(_senderSyncSourceId, new[] {rtcpReportBlock});
+            var receiverReport = new RtcpReceiverReportPacket(_senderSyncSourceId, new[] { rtcpReportBlock });
 
             _rtpStatisticsProvider.ResetState();
 
@@ -82,8 +93,8 @@ namespace RtspClientSharp.Rtcp
 
         private RtcpSdesReportPacket CreateSdesReport()
         {
-            var items = new[] {new RtcpSdesNameItem(_machineName)};
-            var chunks = new[] {new RtcpSdesChunk(_senderSyncSourceId, items)};
+            var items = new[] { new RtcpSdesNameItem(_machineName) };
+            var chunks = new[] { new RtcpSdesChunk(_senderSyncSourceId, items) };
 
             var sdesReport = new RtcpSdesReportPacket(chunks);
             return sdesReport;

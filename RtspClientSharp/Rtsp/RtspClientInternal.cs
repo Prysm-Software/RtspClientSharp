@@ -35,6 +35,7 @@ namespace RtspClientSharp.Rtsp
 
         private readonly Dictionary<int, ITransportStream> _streamsMap = new Dictionary<int, ITransportStream>();
         private readonly ConcurrentDictionary<int, Socket> _udpClientsMap = new ConcurrentDictionary<int, Socket>();
+        private readonly ConcurrentDictionary<int, int> _udpRtp2RtcpMap = new ConcurrentDictionary<int, int>();
 
         private readonly Dictionary<int, RtcpReceiverReportsProvider> _reportProvidersMap =
             new Dictionary<int, RtcpReceiverReportsProvider>();
@@ -374,6 +375,7 @@ namespace RtspClientSharp.Rtsp
 
                 _udpClientsMap[rtpChannelNumber] = rtpClient;
                 _udpClientsMap[rtcpChannelNumber] = rtcpClient;
+                _udpRtp2RtcpMap[rtpChannelNumber] = rtcpChannelNumber;
             }
 
             ParseSessionHeader(setupResponse.Headers[WellKnownHeaders.Session]);
@@ -621,7 +623,7 @@ namespace RtspClientSharp.Rtsp
 
                     foreach (KeyValuePair<int, RtcpReceiverReportsProvider> pair in _reportProvidersMap)
                     {
-                        IEnumerable<RtcpPacket> packets = pair.Value.GetReportPackets();
+                        IEnumerable<RtcpPacket> packets = pair.Value.GetReportSdesPackets();
                         ArraySegment<byte> byteSegment = SerializeRtcpPackets(packets, bufferStream);
                         int rtcpChannel = pair.Key + 1;
 
@@ -646,8 +648,11 @@ namespace RtspClientSharp.Rtsp
 
                 if (transportStream is RtpStream rtpStream)
                 {
+                    if (!_udpClientsMap.TryGetValue(_udpRtp2RtcpMap[channelNumber], out Socket clientRtcp))
+                        throw new RtspClientException("RTP connection without RTCP");
+
                     RtcpReceiverReportsProvider receiverReportsProvider = _reportProvidersMap[channelNumber];
-                    receiveTask = ReceiveRtpFromUdpAsync(client, rtpStream, receiverReportsProvider, token);
+                    receiveTask = ReceiveRtpFromUdpAsync(client, clientRtcp, rtpStream, receiverReportsProvider, token);
                 }
                 else
                 {
@@ -660,7 +665,7 @@ namespace RtspClientSharp.Rtsp
             return Task.WhenAll(waitList);
         }
 
-        private Task ReceiveRtpFromUdpAsync(Socket client, RtpStream rtpStream, RtcpReceiverReportsProvider reportsProvider, CancellationToken token)
+        private Task ReceiveRtpFromUdpAsync(Socket client, Socket clientRtcp, RtpStream rtpStream, RtcpReceiverReportsProvider reportsProvider, CancellationToken token)
         {
             return Task.Run(() =>
             {
@@ -668,6 +673,8 @@ namespace RtspClientSharp.Rtsp
                 var bufferSegment = new ArraySegment<byte>(readBuffer);
                 int nextRtcpReportInterval = GetNextRtcpReportIntervalMs();
                 int lastTimeRtcpReportsSent = Environment.TickCount;
+                IEnumerable<RtcpPacket> packets;
+                ArraySegment<byte> byteSegment;
 
                 using (var bufferStream = new MemoryStream())
                 {
@@ -687,10 +694,10 @@ namespace RtspClientSharp.Rtsp
                             lastTimeRtcpReportsSent = ticksNow;
                             nextRtcpReportInterval = GetNextRtcpReportIntervalMs();
 
-                            IEnumerable<RtcpPacket> packets = reportsProvider.GetReportPackets();
-                            var byteSegment = SerializeRtcpPackets(packets, bufferStream);
+                            packets = reportsProvider.GetReportSdesPackets();
+                            byteSegment = SerializeRtcpPackets(packets, bufferStream);
 
-                            client.Send(byteSegment.Array, byteSegment.Count, SocketFlags.None);
+                            clientRtcp.Send(byteSegment.Array, byteSegment.Count, SocketFlags.None);
                             //await client.SendAsync(byteSegment, SocketFlags.None);
                         }
                         catch (Exception ex)
@@ -699,6 +706,14 @@ namespace RtspClientSharp.Rtsp
                                 throw ex;
                         }
                     }
+
+                    try
+                    {
+                        packets = reportsProvider.GetReportByePackets();
+                        byteSegment = SerializeRtcpPackets(packets, bufferStream);
+                        clientRtcp.Send(byteSegment.Array, byteSegment.Count, SocketFlags.None);
+                    }
+                    catch { }
                 }
             });
         }
