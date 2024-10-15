@@ -18,8 +18,8 @@
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<PackageIconUrl>https://github.com/BogdanovKirill/RtspClientSharp/blob/master/Images/package_icon.png?raw=true</PackageIconUrl>
 		<Copyright>Copyright ©2024 Kirill Bogdanov, Prysm</Copyright>
-		<Version>2.0.8.0</Version>
-		<PackageReleaseNotes>Fix: KeepAlive rtsp request were only sent if the server support GET_PARAMETER request. Now if it does not support GET_PARAMETER we sent OPTION for keepalive</PackageReleaseNotes>
+		<Version>2.0.9.0</Version>
+		<PackageReleaseNotes>Fix: Tolerance if rtsp server send multile track from the same port</PackageReleaseNotes>
 		<RepositoryType>git</RepositoryType>
 		<Platforms>AnyCPU;x64;x86</Platforms>
 		<Configurations>Debug;Release;Publish</Configurations>

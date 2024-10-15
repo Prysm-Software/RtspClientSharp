@@ -33,12 +33,14 @@ namespace SimpleRtspClient
             //var serverUri = "rtsp://appvision:Prysm123@192.168.20.44:7001/799f1fd2-0a68-1fab-7d12-5b184c8d7409?speed=1&pos=1709265600000";
             //var serverUri = "rtsp://root:pass@192.168.0.200/onvif-media/media.amp?profile=profile_1_h264"; // axis
             //var serverUri = "rtsp://admin:@192.168.30.5/Interface/Cameras/Media?Camera=Mobotix&Profile=Visualization"; // digifort
-            var serverUri = "rtsp://appvision:prysm123@192.168.50.18/rtsp/Camera35"; // Cossilys
+            //var serverUri = "rtsp://appvision:prysm123@192.168.50.18/rtsp/Camera35"; // Cossilys
+            var serverUri = "rtsp://service:Ccrlyon69!@192.168.40.24/rtsp_tunnel?p=0&h26x=4&aon=1&aud=1&vcd=2"; // BOSCH
 
             var connectionParameters = new ConnectionParameters(new Uri(serverUri))
             {
                 ReceiveTimeout = TimeSpan.FromSeconds(5),
                 RtpTransport = RtpTransportProtocol.UDP,
+                RequiredTracks = RequiredTracks.All,
             };
             var cancellationTokenSource = new CancellationTokenSource();
 

@@ -98,7 +98,7 @@ namespace RtspClientSharp.Rtsp
             bool anyTrackRequested = false;
 
             var mediaTracks = new List<RtspMediaTrackInfo>();
-            foreach (RtspMediaTrackInfo track in GetTracksToSetup(tracks))
+            foreach (RtspMediaTrackInfo track in GetTracksToSetup(tracks)
             {
                 await SetupTrackAsync(requestParams.InitialTimestamp, track, requestParams.Token);
                 anyTrackRequested = true;
@@ -344,11 +344,19 @@ namespace RtspClientSharp.Rtsp
                 : "interleaved";
 
             string[] transportAttributes = transportHeader.Split(TransportAttributesSeparator, StringSplitOptions.RemoveEmptyEntries);
-
             string portsAttribute = transportAttributes.FirstOrDefault(a => a.StartsWith(portsAttributeName, StringComparison.InvariantCultureIgnoreCase));
 
             if (portsAttribute == null || !TryParseSeverPorts(portsAttribute, out rtpChannelNumber, out rtcpChannelNumber))
                 throw new RtspBadResponseException("Server ports are not found");
+
+            // If the server send audio and video data from the same port, we do not handle that case
+            // => Happen with BOSCH cameras
+            if (_streamsMap.ContainsKey(rtpChannelNumber))
+            {
+                rtpClient.Close();
+                rtcpClient.Close();
+                return;
+            }
 
             if (_connectionParameters.RtpTransport == RtpTransportProtocol.UDP)
             {
