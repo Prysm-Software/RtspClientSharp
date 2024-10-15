@@ -100,10 +100,10 @@ namespace RtspClientSharp.Rtsp
             var mediaTracks = new List<RtspMediaTrackInfo>();
             foreach (RtspMediaTrackInfo track in GetTracksToSetup(tracks))
             {
-                await SetupTrackAsync(requestParams.InitialTimestamp, track, requestParams.Token);
+                if (await SetupTrackAsync(requestParams.InitialTimestamp, track, requestParams.Token))
+                    mediaTracks.Add(track);
+                
                 anyTrackRequested = true;
-
-                mediaTracks.Add(track);
             }
 
             ClientDescription = new RtspClientDescription(parser.Sdp, mediaTracks);
@@ -137,7 +137,7 @@ namespace RtspClientSharp.Rtsp
                 CancellationToken linkedToken = linkedTokenSource.Token;
                 Exception keepAliveError = null;
 
-                
+
                 _ = Task.Run(async () =>
                 {
                     try
@@ -278,7 +278,7 @@ namespace RtspClientSharp.Rtsp
             return RtcpReportIntervalBaseMs + _random.Next(0, 11) * 100;
         }
 
-        private async Task SetupTrackAsync(DateTime? initialTimeStamp, RtspMediaTrackInfo track, CancellationToken token)
+        private async Task<bool> SetupTrackAsync(DateTime? initialTimeStamp, RtspMediaTrackInfo track, CancellationToken token)
         {
             RtspRequestMessage setupRequest;
             RtspResponseMessage setupResponse;
@@ -355,7 +355,7 @@ namespace RtspClientSharp.Rtsp
             {
                 rtpClient.Close();
                 rtcpClient.Close();
-                return;
+                return false;
             }
 
             if (_connectionParameters.RtpTransport == RtpTransportProtocol.UDP)
@@ -417,6 +417,8 @@ namespace RtspClientSharp.Rtsp
 
             var rtcpReportsProvider = new RtcpReceiverReportsProvider(rtpStream, rtcpStream, senderSyncSourceId);
             _reportProvidersMap.Add(rtpChannelNumber, rtcpReportsProvider);
+
+            return true;
         }
 
         private void OnNaluReceived(byte[] nalu)
@@ -426,7 +428,7 @@ namespace RtspClientSharp.Rtsp
 
         private async Task SendRtspKeepAliveAsync(CancellationToken token)
         {
-            RtspRequestMessage request = _isServerSupportsGetParameterRequest 
+            RtspRequestMessage request = _isServerSupportsGetParameterRequest
                 ? _requestMessageFactory.CreateGetParameterRequest()
                 : _requestMessageFactory.CreateOptionsRequest();
 
