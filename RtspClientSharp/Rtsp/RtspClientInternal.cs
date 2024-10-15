@@ -98,7 +98,7 @@ namespace RtspClientSharp.Rtsp
             bool anyTrackRequested = false;
 
             var mediaTracks = new List<RtspMediaTrackInfo>();
-            foreach (RtspMediaTrackInfo track in GetTracksToSetup(tracks)
+            foreach (RtspMediaTrackInfo track in GetTracksToSetup(tracks))
             {
                 await SetupTrackAsync(requestParams.InitialTimestamp, track, requestParams.Token);
                 anyTrackRequested = true;
