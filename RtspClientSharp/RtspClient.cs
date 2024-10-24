@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Security.Authentication;
 using System.Threading;
 using System.Threading.Tasks;
 using RtspClientSharp.RawFrames;
+using RtspClientSharp.RawFrames.Video;
 using RtspClientSharp.Rtp;
 using RtspClientSharp.Rtsp;
 using RtspClientSharp.Sdp;
@@ -23,6 +25,7 @@ namespace RtspClientSharp
         public ConnectionParameters ConnectionParameters { get; }
 
         public event EventHandler<RawFrame> FrameReceived;
+        public event EventHandler<RawNALuFrame> NaluFrameReceived;
         public event EventHandler<byte[]> NaluReceived;
         public RtspClientDescription ClientDescription => _rtspClientInternal?.ClientDescription;    
 
@@ -260,7 +263,8 @@ namespace RtspClientSharp
                 NaluReceived = buf =>
                 {
                     Volatile.Write(ref _anyFrameReceived, true);
-                    NaluReceived?.Invoke(this, buf);
+                    NaluFrameReceived?.Invoke(this, buf);
+                    NaluReceived?.Invoke(this, buf.FrameSegment.ToArray()); // For backward compat
                 }
             };
         }

@@ -14,6 +14,7 @@ using RtspClientSharp.Codecs.Data;
 using RtspClientSharp.Codecs.Video;
 using RtspClientSharp.MediaParsers;
 using RtspClientSharp.RawFrames;
+using RtspClientSharp.RawFrames.Video;
 using RtspClientSharp.Rtcp;
 using RtspClientSharp.Rtp;
 using RtspClientSharp.Sdp;
@@ -53,7 +54,7 @@ namespace RtspClientSharp.Rtsp
         private int _disposed;
 
         public Action<RawFrame> FrameReceived;
-        public Action<byte[]> NaluReceived;
+        public Action<RawNALuFrame> NaluReceived;
         public RtspClientDescription ClientDescription { get; private set; }
 
 
@@ -421,7 +422,7 @@ namespace RtspClientSharp.Rtsp
             return true;
         }
 
-        private void OnNaluReceived(byte[] nalu)
+        private void OnNaluReceived(RawNALuFrame nalu)
         {
             NaluReceived?.Invoke(nalu);
         }

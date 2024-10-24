@@ -18,8 +18,8 @@
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<PackageIconUrl>https://github.com/BogdanovKirill/RtspClientSharp/blob/master/Images/package_icon.png?raw=true</PackageIconUrl>
 		<Copyright>Copyright ©2024 Kirill Bogdanov, Prysm</Copyright>
-		<Version>2.0.9.1</Version>
-		<PackageReleaseNotes>Fix: Tolerance if rtsp server send multile track from the same port</PackageReleaseNotes>
+		<Version>2.0.10.0</Version>
+		<PackageReleaseNotes>Add: Event NALuFrameReceived to include Timestamp with NALu packets</PackageReleaseNotes>
 		<RepositoryType>git</RepositoryType>
 		<Platforms>AnyCPU;x64;x86</Platforms>
 		<Configurations>Debug;Release;Publish</Configurations>

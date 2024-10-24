@@ -1,5 +1,6 @@
 ﻿using System;
 using RtspClientSharp.RawFrames;
+using RtspClientSharp.RawFrames.Video;
 
 namespace RtspClientSharp.MediaParsers
 {
@@ -9,7 +10,7 @@ namespace RtspClientSharp.MediaParsers
 
         Action<RawFrame> FrameGenerated { get; set; }
         
-        Action<byte[]> NaluReceived { get; set; }
+        Action<RawNALuFrame> NaluReceived { get; set; }
 
         void Parse(TimeSpan timeOffset, ArraySegment<byte> byteSegment, bool markerBit);
 

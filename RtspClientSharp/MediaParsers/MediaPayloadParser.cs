@@ -3,6 +3,7 @@ using RtspClientSharp.Codecs.Audio;
 using RtspClientSharp.Codecs.Data;
 using RtspClientSharp.Codecs.Video;
 using RtspClientSharp.RawFrames;
+using RtspClientSharp.RawFrames.Video;
 using System;
 
 namespace RtspClientSharp.MediaParsers
@@ -12,7 +13,7 @@ namespace RtspClientSharp.MediaParsers
         public DateTime BaseTime { get; set; }
 
         public Action<RawFrame> FrameGenerated { get; set; }
-        public Action<byte[]> NaluReceived { get; set; }
+        public Action<RawNALuFrame> NaluReceived { get; set; }
 
 
         public abstract void Parse(TimeSpan timeOffset, ArraySegment<byte> byteSegment, bool markerBit);
@@ -35,7 +36,7 @@ namespace RtspClientSharp.MediaParsers
             FrameGenerated?.Invoke(e);
         }
 
-        public static IMediaPayloadParser CreateFrom(CodecInfo codecInfo, Action<byte[]> naluReceived)
+        public static IMediaPayloadParser CreateFrom(CodecInfo codecInfo, Action<RawNALuFrame> naluReceived)
         {
             switch (codecInfo)
             {

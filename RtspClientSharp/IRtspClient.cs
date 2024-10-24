@@ -4,9 +4,8 @@ using System.Security.Authentication;
 using System.Threading;
 using System.Threading.Tasks;
 using RtspClientSharp.RawFrames;
-using RtspClientSharp.Rtp;
+using RtspClientSharp.RawFrames.Video;
 using RtspClientSharp.Rtsp;
-using RtspClientSharp.Sdp;
 
 namespace RtspClientSharp
 {
@@ -16,7 +15,14 @@ namespace RtspClientSharp
         RtspClientDescription ClientDescription { get; }
         
         event EventHandler<RawFrame> FrameReceived;
+
+        [Obsolete("Use NaluFrameReceived instead")]
         event EventHandler<byte[]> NaluReceived;
+
+        /// <summary>
+        /// Called every time a NALu h26x is received
+        /// </summary>
+        event EventHandler<RawNALuFrame> NaluFrameReceived;
 
 
         /// <summary>
