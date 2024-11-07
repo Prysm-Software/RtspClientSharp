@@ -1,3 +1,7 @@
+2.0.10.1
+==========================
+Fix: Possibility to remove Range ntp=0.000- on individuals PLAY requests
+
 2.0.10.0
 ==========================
 Add: Event NALuFrameReceived to include Timestamp with NALu packets

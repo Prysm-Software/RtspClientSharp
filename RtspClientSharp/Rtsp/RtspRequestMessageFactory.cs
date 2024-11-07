@@ -54,20 +54,21 @@ namespace RtspClientSharp.Rtsp
             return rtspRequestMessage;
         }
 
-        public RtspRequestMessage CreatePlayRequest(RtspRequestParams connectionParams = null)
+        public RtspRequestMessage CreatePlayRequest(RtspRequestParams requestParam, bool includeDefaultNptRange = true)
         {
             var uri = GetContentBasedUri();
             var rtspRequestMessage = new RtspRequestMessage(RtspMethod.PLAY, uri, ProtocolVersion, NextCSeqProvider, _userAgent, SessionId);
 
-            if (connectionParams?.InitialTimestamp?.Kind == DateTimeKind.Utc)
-                rtspRequestMessage.Headers.Add("Range", $"clock={connectionParams.InitialTimestamp.Value.ToString("yyyyMMddTHHmmssZ")}-");
-            else if (connectionParams?.InitialTimestamp != null)
-                rtspRequestMessage.Headers.Add("Range", $"clock={DateTime.SpecifyKind(connectionParams.InitialTimestamp.Value, DateTimeKind.Utc).ToString("yyyyMMddTHHmmssZ")}-");
-            else
+            // Seems like some timestamps are being returned with 2 different timezones and/or some difference between the requested datetime and the returned one.
+            if (requestParam?.InitialTimestamp?.Kind == DateTimeKind.Utc)
+                rtspRequestMessage.Headers.Add("Range", $"clock={requestParam.InitialTimestamp.Value:yyyyMMddTHHmmssZ}-");
+            else if (requestParam?.InitialTimestamp != null)
+                rtspRequestMessage.Headers.Add("Range", $"clock={DateTime.SpecifyKind(requestParam.InitialTimestamp.Value, DateTimeKind.Utc):yyyyMMddTHHmmssZ}-");
+            else if (includeDefaultNptRange)
                 rtspRequestMessage.Headers.Add("Range", "npt=0.000-");
 
-            if (connectionParams?.Headers != null)
-                foreach (var item in connectionParams.Headers)
+            if (requestParam?.Headers != null)
+                foreach (var item in requestParam.Headers)
                     rtspRequestMessage.Headers.Add(item.Key, item.Value);
 
             return rtspRequestMessage;
