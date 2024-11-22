@@ -1,3 +1,7 @@
+2.0.11.0
+==========================
+Add: All SDP field infos has been added to the property RtspClient.ClientDescription (Framerate, Framesize...).
+
 2.0.10.1
 ==========================
 Fix: Possibility to remove Range ntp=0.000- on individuals PLAY requests

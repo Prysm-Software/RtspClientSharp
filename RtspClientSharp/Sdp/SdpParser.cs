@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using RtspClientSharp.Codecs;
@@ -33,6 +34,7 @@ namespace RtspClientSharp.Sdp
             new Dictionary<int, PayloadFormatInfo>();
 
         private PayloadFormatInfo _lastParsedFormatInfo;
+        private IDictionary<string, string> _lastOtherTrackAttributes= new Dictionary<string, string>();
 
         public IEnumerable<RtspTrackInfo> Parse(ArraySegment<byte> payloadSegment)
         {
@@ -54,12 +56,24 @@ namespace RtspClientSharp.Sdp
                     string line;
                     while (!string.IsNullOrEmpty(line = sdpStreamReader.ReadLine()))
                     {
-
                         if (line[0] == 'm')
+                        {
+                            if (_lastParsedFormatInfo?.CodecInfo != null)
+                                foreach (var kvp in _lastOtherTrackAttributes)
+                                    _lastParsedFormatInfo.CodecInfo.Attributes[kvp.Key] = kvp.Value;
+
+                            _lastOtherTrackAttributes.Clear();
                             ParseMediaLine(line);
+                        }
                         else if (line[0] == 'a')
+                        {
                             ParseAttributesLine(line);
+                        }
                     }
+
+                    if (_lastParsedFormatInfo?.CodecInfo != null)
+                        foreach (var kvp in _lastOtherTrackAttributes)
+                            _lastParsedFormatInfo.CodecInfo.Attributes[kvp.Key] = kvp.Value;
 
                     return _payloadFormatNumberToInfoMap.Values
                         .Where(fi => fi.TrackName != null && fi.CodecInfo != null)
@@ -133,6 +147,15 @@ namespace RtspClientSharp.Sdp
                     break;
                 case "FMTP":
                     ParseFmtpAttribute(attributeValue);
+                    break;
+                case "FRAMERATE":
+                    ParseFramerateAttributes(attributeValue);
+                    break;
+                case "FRAMESIZE":
+                    ParseFramesizeAttributes(attributeValue);
+                    break;
+                default:
+                    _lastOtherTrackAttributes.Add(attributeName.ToLowerInvariant(), attributeValue);
                     break;
             }
         }
@@ -234,11 +257,34 @@ namespace RtspClientSharp.Sdp
                 ParseAACFormatAttributes(formatAttributes, aacCodecInfo);
         }
 
+        private void ParseFramerateAttributes(string attributeValue)
+        {
+            if (_lastParsedFormatInfo?.CodecInfo is VideoCodecInfo videoCodecInfo
+                && double.TryParse(attributeValue, NumberStyles.Any, CultureInfo.InvariantCulture, out double framerate))
+            {
+                videoCodecInfo.Framerate = framerate;
+            }
+        }
+
+        private void ParseFramesizeAttributes(string attributeValue)
+        {
+            if (_lastParsedFormatInfo?.CodecInfo is VideoCodecInfo videoCodecInfo)
+            {
+                videoCodecInfo.Framesize = attributeValue;
+            }
+        }
+
         private static void ParseH264FormatAttributes(string[] formatAttributes, H264CodecInfo h264CodecInfo)
         {
-            string spropParametersSet = formatAttributes.FirstOrDefault(fa =>
-                fa.StartsWith("sprop-parameter-sets", StringComparison.InvariantCultureIgnoreCase));
+            string profileLevelId = formatAttributes.FirstOrDefault(fa => fa.StartsWith("profile-level-id", StringComparison.InvariantCultureIgnoreCase));
+            if (!string.IsNullOrEmpty(profileLevelId))
+                h264CodecInfo.ProfileLevelId = GetFormatParameterValue(profileLevelId);
 
+            string packetizationMode = formatAttributes.FirstOrDefault(fa => fa.StartsWith("packetization-mode", StringComparison.InvariantCultureIgnoreCase));
+            if (!string.IsNullOrEmpty(packetizationMode) && int.TryParse(GetFormatParameterValue(packetizationMode), out int packetizationModeVal))
+                h264CodecInfo.PacketizationMode = packetizationModeVal;
+
+            string spropParametersSet = formatAttributes.FirstOrDefault(fa => fa.StartsWith("sprop-parameter-sets", StringComparison.InvariantCultureIgnoreCase));
             if (spropParametersSet == null)
                 return;
 
@@ -269,33 +315,28 @@ namespace RtspClientSharp.Sdp
 
         private static void ParseH265FormatAttributes(string[] formatAttributes, H265CodecInfo h265CodecInfo)
         {
-            string spropVpsSet = formatAttributes.FirstOrDefault(fa =>
-                fa.StartsWith("sprop-vps", StringComparison.InvariantCultureIgnoreCase));
+            string packetizationMode = formatAttributes.FirstOrDefault(fa => fa.StartsWith("packetization-mode", StringComparison.InvariantCultureIgnoreCase));
+            if (!string.IsNullOrEmpty(packetizationMode) && int.TryParse(GetFormatParameterValue(packetizationMode), out int packetizationModeVal))
+                h265CodecInfo.PacketizationMode = packetizationModeVal;
 
+            string spropVpsSet = formatAttributes.FirstOrDefault(fa => fa.StartsWith("sprop-vps", StringComparison.InvariantCultureIgnoreCase));
             if (spropVpsSet != null)
             {
                 string spropVpsSetValue = GetFormatParameterValue(spropVpsSet);
-
                 h265CodecInfo.VpsBytes = RawH265Frame.StartMarker.Concat(Convert.FromBase64String(spropVpsSetValue)).ToArray();
             }
 
-            string spropSpsSet = formatAttributes.FirstOrDefault(fa =>
-                fa.StartsWith("sprop-sps", StringComparison.InvariantCultureIgnoreCase));
-
+            string spropSpsSet = formatAttributes.FirstOrDefault(fa => fa.StartsWith("sprop-sps", StringComparison.InvariantCultureIgnoreCase));
             if (spropSpsSet != null)
             {
                 string spropSpsSetValue = GetFormatParameterValue(spropSpsSet);
-
                 h265CodecInfo.SpsBytes = RawH265Frame.StartMarker.Concat(Convert.FromBase64String(spropSpsSetValue)).ToArray();
             }
 
-            string spropPpsSet = formatAttributes.FirstOrDefault(fa =>
-                fa.StartsWith("sprop-pps", StringComparison.InvariantCultureIgnoreCase));
-
+            string spropPpsSet = formatAttributes.FirstOrDefault(fa => fa.StartsWith("sprop-pps", StringComparison.InvariantCultureIgnoreCase));
             if (spropPpsSet != null)
             {
                 string spropPpsSetValue = GetFormatParameterValue(spropPpsSet);
-
                 h265CodecInfo.PpsBytes = RawH265Frame.StartMarker.Concat(Convert.FromBase64String(spropPpsSetValue)).ToArray();
             }
 

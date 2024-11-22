@@ -23,20 +23,22 @@ namespace SimpleRtspClient
             TaskScheduler.UnobservedTaskException += TaskScheduler_UnobservedTaskException;
 
             //var serverUri = "rtsp://onvif:Prysm-123@192.168.50.17:554/live/bf4f8cb1-f4bf-4fda-aeef-9e6fd5ffc03f"; // milestone MOBOTIX
-            //var serverUri = "rtsp://admin:Prysm123@192.168.40.34:554/Streaming/Channels/102?transportmode=unicast&profile=Profile_2"; // HIK h265
+            //var serverUri = "rtsp://admin:Prysm123@192.168.40.34:554/Streaming/Channels/103?transportmode=unicast&profile=Profile_3"; // HIK h265
             //var serverUri = "rtsp://admin:pass@192.168.40.33/stream1"; // mobotix
-            //var serverUri = "rtsp://root:pass@192.168.40.31/onvif-media/media.amp?profile=profile_2_h264"; // axis acceuil
-            var serverUri = "rtsp://admin:prysm-123@192.168.0.201/0/onvif/profile1/media.smp"; // wisenet
+            //var serverUri = "rtsp://admin:prysm-123@192.168.0.201/0/onvif/profile1/media.smp"; // wisenet
             //var serverUri = "rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mp4";
             //var serverUri = "rtsp://hello:world@192.168.50.1/Profile.C0.S0.unicast";
             //var serverUri = "rtsp://hello:world@192.168.50.1/R.D0.C8.S0";
-            //var serverUri = "rtsp://onvif:Prysm-123@192.168.50.17:554/vod/bf4f8cb1-f4bf-4fda-aeef-9e6fd5ffc03f";
+            //var serverUri = "rtsp://onvif:Prysm-123@192.168.50.17:554/live/1fefea38-c5e2-4e4b-9b43-bcb75365ed16"; // Milestone
             //var serverUri = "rtsp://admin:Prysm123@192.168.50.11/ISAPI/streaming/tracks/401?starttime=20240318T080652Z&endtime=20240318T081506Z"; // HIK
             //var serverUri = "rtsp://appvision:Prysm123@192.168.20.44:7001/799f1fd2-0a68-1fab-7d12-5b184c8d7409?speed=1&pos=1709265600000";
-            //var serverUri = "rtsp://root:pass@192.168.0.200/onvif-media/media.amp?profile=profile_1_h264"; // axis
             //var serverUri = "rtsp://admin:@192.168.30.5/Interface/Cameras/Media?Camera=Mobotix&Profile=Visualization"; // digifort
             //var serverUri = "rtsp://appvision:prysm123@192.168.50.18/rtsp/Camera35"; // Cossilys
             //var serverUri = "rtsp://service:Ccrlyon69!@192.168.40.24/rtsp_tunnel?p=0&h26x=4&aon=1&aud=1&vcd=2"; // BOSCH
+            var serverUri = "rtsp://root:pass@192.168.40.31/onvif-media/media.amp?profile=profile_1_h265"; // Axis acceuil
+            //var serverUri = "rtsp://root:pass@192.168.40.10/onvif-media/media.amp"; // Axis F41
+            //var serverUri = "rtsp://root:pass@192.168.40.10/onvif-media/media.amp?profile=profile_1_jpeg"; // Axis F41 MJPEG
+
 
             var connectionParameters = new ConnectionParameters(new Uri(serverUri))
             {
