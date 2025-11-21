@@ -1,3 +1,7 @@
+2.0.12.0
+==========================
+Add: Tolerance if RTSP server does not not send RTCP port in SETUP response
+
 2.0.11.0
 ==========================
 Add: All SDP field infos has been added to the property RtspClient.ClientDescription (Framerate, Framesize...).

@@ -18,7 +18,7 @@
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<PackageIconUrl>https://github.com/BogdanovKirill/RtspClientSharp/blob/master/Images/package_icon.png?raw=true</PackageIconUrl>
 		<Copyright>Copyright ©2024 Kirill Bogdanov, Prysm</Copyright>
-		<Version>2.0.11.0</Version>
+		<Version>2.0.12.0</Version>
 		<PackageReleaseNotes>Add: All SDP field infos has been added to the property RtspClient.ClientDescription (Framerate, Framesize...).</PackageReleaseNotes>
 		<RepositoryType>git</RepositoryType>
 		<Platforms>AnyCPU;x64;x86</Platforms>

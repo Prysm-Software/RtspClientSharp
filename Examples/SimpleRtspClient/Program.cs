@@ -35,10 +35,10 @@ namespace SimpleRtspClient
             //var serverUri = "rtsp://admin:@192.168.30.5/Interface/Cameras/Media?Camera=Mobotix&Profile=Visualization"; // digifort
             //var serverUri = "rtsp://appvision:prysm123@192.168.50.18/rtsp/Camera35"; // Cossilys
             //var serverUri = "rtsp://service:Ccrlyon69!@192.168.40.24/rtsp_tunnel?p=0&h26x=4&aon=1&aud=1&vcd=2"; // BOSCH
-            var serverUri = "rtsp://root:pass@192.168.40.31/onvif-media/media.amp?profile=profile_1_h265"; // Axis acceuil
-            //var serverUri = "rtsp://root:pass@192.168.40.10/onvif-media/media.amp"; // Axis F41
-            //var serverUri = "rtsp://root:pass@192.168.40.10/onvif-media/media.amp?profile=profile_1_jpeg"; // Axis F41 MJPEG
-
+            //var serverUri = "rtsp://root:pass@192.168.40.31/onvif-media/media.amp?profile=profile_1_h265"; // Axis acceuil
+            //var serverUri = "rtsp://root:pass@10.30.18.10/onvif-media/media.amp"; // Axis F41
+            //var serverUri = "rtsp://root:pass@10.30.18.10/onvif-media/media.amp?profile=profile_1_jpeg"; // Axis F41 MJPEG
+            var serverUri = "rtsp://10.30.17.83:554/camera04/video";
 
             var connectionParameters = new ConnectionParameters(new Uri(serverUri))
             {
